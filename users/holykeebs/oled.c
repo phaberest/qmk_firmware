@@ -173,7 +173,7 @@ void hk_oled_render_layerinfo(void) {
     oled_write(format_3d(get_auto_mouse_timeout()), false);
     oled_write_char('0', false);
 #    else
-    oled_write_P(PSTR("\xC2\xC3\xB4\xB5 ---"), false);
+    oled_write_P(PSTR("\xC2\xC3\xB4\xB5 --"), false);
 #    endif
 }
 
