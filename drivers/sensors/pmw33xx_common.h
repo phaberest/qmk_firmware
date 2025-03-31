@@ -180,3 +180,6 @@ void           pmw33xx_init_wrapper(void);
 void           pmw33xx_set_cpi_wrapper(uint16_t cpi);
 uint16_t       pmw33xx_get_cpi_wrapper(void);
 report_mouse_t pmw33xx_get_report(report_mouse_t mouse_report);
+
+// Tells the Keyball firmware that the sensor initialized succesfully.
+extern bool pmw33xx_init_ok;

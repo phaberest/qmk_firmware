@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdbool.h>
+#include "keyboard.h"
 #include "ps2_mouse.h"
 #include "wait.h"
 #include "gpio.h"
@@ -28,7 +29,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* ============================= MACROS ============================ */
 
-static report_mouse_t mouse_report = {};
+static uint8_t buttons_prev = 0;
+static report_mouse_t local_mouse_report = {};
 
 static inline void ps2_mouse_print_report(report_mouse_t *mouse_report);
 static inline void ps2_mouse_convert_report_to_hid(report_mouse_t *mouse_report);
@@ -40,11 +42,17 @@ static inline void ps2_mouse_scroll_button_task(report_mouse_t *mouse_report);
 
 /* supports only 3 button mouse at this time */
 void ps2_mouse_init(void) {
+    if (!is_keyboard_master()) {
+        return;
+    }
+
     ps2_host_init();
 
     wait_ms(PS2_MOUSE_INIT_DELAY); // wait for powering up
 
     PS2_MOUSE_SEND(PS2_MOUSE_RESET, "ps2_mouse_init: sending reset");
+    // Spec calls for 500ms sleep after reset.
+    wait_ms(500);
 
     PS2_MOUSE_RECEIVE("ps2_mouse_init: read BAT");
     PS2_MOUSE_RECEIVE("ps2_mouse_init: read DevID");
@@ -65,6 +73,7 @@ void ps2_mouse_init(void) {
 #endif
 
     ps2_mouse_init_user();
+
 }
 
 __attribute__((weak)) void ps2_mouse_init_user(void) {}
@@ -72,7 +81,31 @@ __attribute__((weak)) void ps2_mouse_init_user(void) {}
 __attribute__((weak)) void ps2_mouse_moved_user(report_mouse_t *mouse_report) {}
 
 void ps2_mouse_task(void) {
-    static uint8_t buttons_prev = 0;
+    if (!ps2_mouse_read(&local_mouse_report)) {
+        return;
+    }
+
+    if (local_mouse_report.x || local_mouse_report.y || local_mouse_report.v || ((local_mouse_report.buttons ^ buttons_prev) & PS2_MOUSE_BTN_MASK)) {
+        host_mouse_send(&local_mouse_report);
+    }
+
+    ps2_mouse_clear_report(&local_mouse_report);
+}
+
+bool ps2_mouse_read(report_mouse_t* mouse_report) {
+    if (!is_keyboard_master()) {
+        return false;
+    }
+
+#if defined(POINTING_DEVICE_CONFIGURATION_TRACKBALL_TRACKPOINT) || defined(POINTING_DEVICE_CONFIGURATION_TRACKPOINT_TRACKBALL)
+    // Reading the ps2 mouse too often can cause the Pimoroni on the other side to lock up.
+    static uint32_t last_exec = 0;
+    if (timer_elapsed32(last_exec) < 15) {
+        return false;
+    }
+    last_exec = timer_read32();
+#endif
+
     extern int     tp_buttons;
 
     /* receives packet from mouse */
@@ -80,55 +113,56 @@ void ps2_mouse_task(void) {
     uint8_t rcv;
     rcv = ps2_host_send(PS2_MOUSE_READ_DATA);
     if (rcv == PS2_ACK) {
-        mouse_report.buttons = ps2_host_recv_response();
-        mouse_report.x       = ps2_host_recv_response();
-        mouse_report.y       = ps2_host_recv_response();
+        mouse_report->buttons = ps2_host_recv_response();
+        mouse_report->x       = ps2_host_recv_response();
+        mouse_report->y       = ps2_host_recv_response();
 #    ifdef PS2_MOUSE_ENABLE_SCROLLING
-        mouse_report.v = -(ps2_host_recv_response() & PS2_MOUSE_SCROLL_MASK);
+        mouse_report->v = -(ps2_host_recv_response() & PS2_MOUSE_SCROLL_MASK);
 #    endif
     } else {
         if (debug_mouse) print("ps2_mouse: fail to get mouse packet\n");
         /* return here to avoid updating the mouse button state */
-        return;
+        return false;
     }
 #else
     if (pbuf_has_data()) {
-        mouse_report.buttons = ps2_host_recv_response();
-        mouse_report.x       = ps2_host_recv_response();
-        mouse_report.y       = ps2_host_recv_response();
+        mouse_report->buttons = ps2_host_recv_response();
+        mouse_report->x       = ps2_host_recv_response();
+        mouse_report->y       = ps2_host_recv_response();
 #    ifdef PS2_MOUSE_ENABLE_SCROLLING
-        mouse_report.v       = -(ps2_host_recv_response() & PS2_MOUSE_SCROLL_MASK);
+        mouse_report->v       = -(ps2_host_recv_response() & PS2_MOUSE_SCROLL_MASK);
 #    endif
     } else {
         if (debug_mouse) print("ps2_mouse: fail to get mouse packet\n");
         /* return here to avoid updating the mouse button state */
-        return;
+        return false;
     }
 #endif
 
-    mouse_report.buttons |= tp_buttons;
+    mouse_report->buttons |= tp_buttons;
     /* if mouse moves or buttons state changes */
-    if (mouse_report.x || mouse_report.y || mouse_report.v || ((mouse_report.buttons ^ buttons_prev) & PS2_MOUSE_BTN_MASK)) {
+    if (mouse_report->x || mouse_report->y || mouse_report->v || ((mouse_report->buttons ^ buttons_prev) & PS2_MOUSE_BTN_MASK)) {
 #ifdef PS2_MOUSE_DEBUG_RAW
         // Used to debug raw ps2 bytes from mouse
-        ps2_mouse_print_report(&mouse_report);
+        ps2_mouse_print_report(mouse_report);
 #endif
-        buttons_prev = mouse_report.buttons;
-        ps2_mouse_convert_report_to_hid(&mouse_report);
+        buttons_prev = mouse_report->buttons;
+        ps2_mouse_convert_report_to_hid(mouse_report);
 #if PS2_MOUSE_SCROLL_BTN_MASK
-        ps2_mouse_scroll_button_task(&mouse_report);
+        ps2_mouse_scroll_button_task(mouse_report);
 #endif
-        if (mouse_report.x || mouse_report.y || mouse_report.v) {
-            ps2_mouse_moved_user(&mouse_report);
+        if (mouse_report->x || mouse_report->y || mouse_report->v) {
+            ps2_mouse_moved_user(mouse_report);
         }
 #ifdef PS2_MOUSE_DEBUG_HID
         // Used to debug the bytes sent to the host
-        ps2_mouse_print_report(&mouse_report);
+        ps2_mouse_print_report(mouse_report);
 #endif
-        host_mouse_send(&mouse_report);
+
+        return true;
     }
 
-    ps2_mouse_clear_report(&mouse_report);
+    return false;
 }
 
 void ps2_mouse_disable_data_reporting(void) {
@@ -163,6 +197,44 @@ void ps2_mouse_set_resolution(ps2_mouse_resolution_t resolution) {
 
 void ps2_mouse_set_sample_rate(ps2_mouse_sample_rate_t sample_rate) {
     PS2_MOUSE_SET_SAFE(PS2_MOUSE_SET_SAMPLE_RATE, sample_rate, "ps2 mouse set sample rate");
+}
+
+const char* ps2_register_enum_to_string(ps2_mouse_register_e reg) {
+    switch (reg) {
+        case PS2_MOUSE_SENSITIVITY_FACTOR:
+            return "sensitivity";
+        case PS2_MOUSE_VALUE6:
+            return "value6";
+        case PS2_MOUSE_K1:
+            return "K1";
+        case PS2_MOUSE_C1:
+            return "C1";
+        case PS2_MOUSE_C2:
+            return "C2";
+        case PS2_MOUSE_C3:
+            return "C3";
+        default:
+            return "unknown register";
+    }
+}
+
+uint8_t ps2_mouse_read_register(ps2_mouse_register_e reg) {
+    PS2_MOUSE_SEND(0xE2, "trackpoint command");
+    PS2_MOUSE_SEND(0x80, "read byte");
+    PS2_MOUSE_SEND(reg, ps2_register_enum_to_string(reg));
+    uint8_t rcv = ps2_host_recv_response();
+    if (debug_mouse) {
+        xprintf("ps2 read register %s result: %X, error: %X [%ld] \n", ps2_register_enum_to_string(reg), rcv, ps2_error, timer_read32());
+    }
+    return rcv;
+}
+
+
+void ps2_mouse_write_register(ps2_mouse_register_e reg, uint8_t data) {
+    PS2_MOUSE_SEND(0xE2, "trackpoint command");
+    PS2_MOUSE_SEND(0x81, "write byte");
+    PS2_MOUSE_SEND(reg, ps2_register_enum_to_string(reg));
+    PS2_MOUSE_SEND(data, "data");
 }
 
 /* ============================= HELPERS ============================ */
