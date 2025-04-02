@@ -77,12 +77,13 @@ static void hk_configure_tps43_common(hk_pointer_state_t* state) {
 static void hk_configure_pimoroni_common(hk_pointer_state_t* state) {
     state->pointer_default_multiplier = 1.0;
     state->pointer_sniping_multiplier = 1.0;
-    state->pointer_scroll_buffer_size = 5;
+    state->pointer_scroll_buffer_size = 1;
 }
 
 static void hk_configure_trackpoint_common(hk_pointer_state_t* state) {
-    state->pointer_default_multiplier = 1.0;
+    state->pointer_default_multiplier = 2.0;
     state->pointer_sniping_multiplier = 1.0;
+    state->pointer_scroll_buffer_size = 5;
 }
 
 static void hk_configure_cirque_common(hk_pointer_state_t* state) {
@@ -223,7 +224,7 @@ __attribute__((weak)) bool process_record_keymap(uint16_t keycode, keyrecord_t* 
     return true;
 }
 
-// Function to handle mouse reports and perform drag scrolling
+// Perform scroll related functionality: drag scrolling, scroll lock.
 void hk_process_scroll(const hk_pointer_state_t* pointer_state, report_mouse_t* mouse_report) {
     if (pointer_state->drag_scroll) {
         mouse_report->h = mouse_report->x;
@@ -233,25 +234,25 @@ void hk_process_scroll(const hk_pointer_state_t* pointer_state, report_mouse_t* 
     }
 
     if (pointer_state->pointer_scroll_buffer_size > 0) {
-        static int16_t scroll_buffer_x = 0;
-        static int16_t scroll_buffer_y = 0;
+        static int16_t scroll_buffer_h = 0;
+        static int16_t scroll_buffer_v = 0;
 
-        scroll_buffer_x += mouse_report->h;
-        scroll_buffer_y += mouse_report->v;
+        scroll_buffer_h += mouse_report->h;
+        scroll_buffer_v += mouse_report->v;
         mouse_report->h = 0;
         mouse_report->v = 0;
 
         bool output_horizontal = pointer_state->scroll_lock == SCROLL_LOCK_HORIZONTAL || pointer_state->scroll_lock == SCROLL_LOCK_OFF;
         bool output_vertical = pointer_state->scroll_lock == SCROLL_LOCK_VERTICAL || pointer_state->scroll_lock == SCROLL_LOCK_OFF;
 
-        if (output_horizontal && abs(scroll_buffer_x) > pointer_state->pointer_scroll_buffer_size) {
-            mouse_report->h = scroll_buffer_x > 0 ? 1 : -1;
-            scroll_buffer_x = 0;
+        if (output_horizontal && abs(scroll_buffer_h) > pointer_state->pointer_scroll_buffer_size) {
+            mouse_report->h = scroll_buffer_h > 0 ? 1 : -1;
+            scroll_buffer_h = 0;
         }
 
-        if (output_vertical && abs(scroll_buffer_y) > pointer_state->pointer_scroll_buffer_size) {
-            mouse_report->v = scroll_buffer_y > 0 ? 1 : -1;
-            scroll_buffer_y = 0;
+        if (output_vertical && abs(scroll_buffer_v) > pointer_state->pointer_scroll_buffer_size) {
+            mouse_report->v = scroll_buffer_v > 0 ? 1 : -1;
+            scroll_buffer_v = 0;
         }
     }
 }
@@ -316,21 +317,30 @@ static float hk_pointer_scale_step(const hk_pointer_state_t* state) {
 static void hk_cycle_pointer_default_multiplier(bool forward, bool side_peripheral) {
     hk_pointer_state_t* state = side_peripheral ? &g_hk_state.peripheral : &g_hk_state.main;
     float step = hk_pointer_scale_step(state);
-    state->pointer_default_multiplier = forward ? state->pointer_default_multiplier + step : state->pointer_default_multiplier - step;
-    g_hk_state.dirty = true;
+    float new_value = forward ? state->pointer_default_multiplier + step : state->pointer_default_multiplier - step;
+    if (new_value > 0) {
+        state->pointer_default_multiplier = new_value;
+        g_hk_state.dirty = true;
+    }
 }
 
 static void hk_cycle_pointer_sniping_multiplier(bool forward, bool side_peripheral) {
     hk_pointer_state_t* state = side_peripheral ? &g_hk_state.peripheral : &g_hk_state.main;
     float step = hk_pointer_scale_step(state);
-    state->pointer_sniping_multiplier = forward ? state->pointer_sniping_multiplier + step : state->pointer_sniping_multiplier - step;
-    g_hk_state.dirty = true;
+    float new_value = forward ? state->pointer_sniping_multiplier + step : state->pointer_sniping_multiplier - step;
+    if (new_value > 0) {
+        state->pointer_sniping_multiplier = new_value;
+        g_hk_state.dirty = true;
+    }
 }
 
 static void hk_cycle_pointer_scroll_buffer(bool forward, bool side_peripheral) {
     hk_pointer_state_t* state = side_peripheral ? &g_hk_state.peripheral : &g_hk_state.main;
-    state->pointer_scroll_buffer_size = forward ? state->pointer_scroll_buffer_size + 1 : state->pointer_scroll_buffer_size - 1;
-    g_hk_state.dirty = true;
+    uint8_t new_value = forward ? state->pointer_scroll_buffer_size + 1 : state->pointer_scroll_buffer_size - 1;
+    if (new_value >= 0) {
+        state->pointer_scroll_buffer_size = new_value;
+        g_hk_state.dirty = true;
+    }
 }
 
 static void hk_cycle_scroll_mode(bool side_peripheral) {
@@ -344,8 +354,6 @@ static void hk_cycle_scroll_mode(bool side_peripheral) {
 }
 
 void hk_process_mouse_report(const hk_pointer_state_t* pointer_state, report_mouse_t* mouse_report) {
-    static uint32_t last_exec = 0;
-
     #ifdef ENABLE_DRIFT_DETECTION
         #ifndef POINTING_DEVICE_CONFIGURATION_TRACKPOINT
             #error "cannot use ENABLE_DRIFT_DETECTION without a trackpoint"
@@ -371,12 +379,6 @@ void hk_process_mouse_report(const hk_pointer_state_t* pointer_state, report_mou
     if (mouse_report->x * rounding_carry_x < 0) rounding_carry_x = 0;
     if (mouse_report->y * rounding_carry_y < 0) rounding_carry_y = 0;
 
-    // Debug at most once per 100ms.
-    bool debug_mouse_report = false;
-    if (timer_elapsed32(last_exec) > 100) {
-        // debug_mouse_report = true;
-        last_exec = timer_read32();
-    }
 
     // First, scale the mouse movement.
     const report_mouse_t mouse_report_copy = *mouse_report;
@@ -390,6 +392,7 @@ void hk_process_mouse_report(const hk_pointer_state_t* pointer_state, report_mou
     // Clamp values.
     const mouse_xy_report_t x = CONSTRAIN_XY(new_x);
     const mouse_xy_report_t y = CONSTRAIN_XY(new_y);
+    bool debug_mouse_report = false;
     if (x != 0 || y != 0 || mouse_report->v != 0 || mouse_report->h != 0) {
         debug_mouse_report = true;
     }
@@ -410,6 +413,7 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
         return pointing_device_task_keymap(mouse_report);
     }
 
+    // We get here only on the main side.
     hk_process_mouse_report(&g_hk_state.main, &mouse_report);
     g_hk_state.display.last_mouse = mouse_report;
 
@@ -423,6 +427,7 @@ report_mouse_t pointing_device_task_combined_user(report_mouse_t left_report, re
         return pointing_device_task_combined_keymap(report);
     }
 
+    // We get here only on the main side. Use is_keyboard_left to know which report is main and which is peripheral.
     hk_process_mouse_report(&g_hk_state.main, is_keyboard_left() ? &left_report : &right_report);
     hk_process_mouse_report(&g_hk_state.peripheral, is_keyboard_left() ? &right_report : &left_report);
 
@@ -500,6 +505,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
             break;
         case KC_UP:
         case KC_DOWN:
+            if (!g_hk_state.setting_default_scale && !g_hk_state.setting_sniping_scale && !g_hk_state.setting_scroll_buffer) {
+                break;
+            }
             if (record->event.pressed) {
                 if (g_hk_state.setting_default_scale) {
                     hk_cycle_pointer_default_multiplier(/*forward=*/keycode == KC_UP, /*side_peripheral=*/has_shift_mod());

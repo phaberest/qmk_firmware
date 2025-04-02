@@ -525,12 +525,12 @@ MOUSEKEY_ENABLE = yes
 
 ifeq ($(strip $(MASTER_SIDE)), left)
 	MSG_MASTER_SIDE = left
-	OPT_DEFS += -DMASTER_LEFT
+	OPT_DEFS += -DHK_MASTER_LEFT
 else ifeq ($(strip $(MASTER_SIDE)), middle)
 	MSG_MASTER_SIDE = n/a (not a split keyboard)
 else
 	MSG_MASTER_SIDE = right
-	OPT_DEFS += -DMASTER_RIGHT
+	OPT_DEFS += -DHK_MASTER_RIGHT
 endif
 
 ifeq ($(strip $(OLED)), yes)

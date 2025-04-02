@@ -26,7 +26,7 @@ static const char LFSTR_ON[] PROGMEM = "\xB2\xB3";
 static const char LFSTR_OFF[] PROGMEM = "\xB4\xB5";
 
 static const char *format_3d(int8_t d) {
-    static char buf[10] = {0}; // max width (3) + NUL (1)
+    static char buf[10] = {0};
     char        lead   = ' ';
     if (d < 0) {
         d    = -d;
@@ -36,13 +36,22 @@ static const char *format_3d(int8_t d) {
     return buf;
 }
 
+static const char *format_2d(int8_t d) {
+    static char buf[10] = {0};
+    if (d > 99) {
+        d = 99;
+    }
+    sprintf(buf, "%02d",d);
+    return buf;
+}
+
 static char to_1x(uint8_t x) {
     x &= 0x0f;
     return x < 10 ? x + '0' : x + 'a' - 10;
 }
 
 static const char* format_multiplier(float f) {
-    static char buf[10] = {0}; // max width (4) + NUL (1)
+    static char buf[10] = {0};
     if (f > 10 || f < -10) {
         sprintf(buf, "err");
     } else {
@@ -55,7 +64,7 @@ void hk_oled_render_pointer_state(void) {
     // Output example:
     //
     //  TPS43: -12  34   0   0
-    //  CUR D: 1.0  ON LK:VT  0
+    //  CUR D: 1.0/5  ON LK:VT
 
     // 1st line, pointing device kind, mouse x, y, h, and v.
     oled_write_P(pointer_kind_to_string(g_hk_state.main.pointer_kind), false);
@@ -89,31 +98,30 @@ void hk_oled_render_pointer_state(void) {
         }
     }
 
+    oled_write_char('/', false);
+    // scroll buffer size:
+    oled_write(format_2d(g_hk_state.main.pointer_scroll_buffer_size), false);
     oled_write_char(' ', false);
 
-    // indicate drag scroll mode: on/off
+    // drag scroll mode: on/off
     if (g_hk_state.main.drag_scroll) {
         oled_write_P(LFSTR_ON, false);
     } else {
         oled_write_P(LFSTR_OFF, false);
     }
 
-    // indicate scroll snap mode: "VT" (vertical), "HN" (horiozntal), and "SCR" (free)
+    // scroll lock mode: "VT" (vertical), "HN" (horiozntal), and "NO" (free)
     switch (g_hk_state.main.scroll_lock) {
         case SCROLL_LOCK_VERTICAL:
-            oled_write_P(PSTR(" LK:VT "), false);
+            oled_write_ln_P(PSTR(" L:VT"), false);
             break;
         case SCROLL_LOCK_HORIZONTAL:
-            oled_write_P(PSTR(" LK:HO "), false);
+            oled_write_ln_P(PSTR(" L:HO"), false);
             break;
         default:
-            oled_write_P(PSTR(" LK:NO "), false);
+            oled_write_ln_P(PSTR(" L:NO"), false);
             break;
     }
-
-    // indicate scroll divider:
-    oled_write_char('0' + g_hk_state.main.pointer_scroll_buffer_size, false);
-    oled_write_ln("", false);
 }
 
 void hk_oled_render_keyinfo(void) {

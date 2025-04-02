@@ -19,7 +19,12 @@
         "type_traits": "c",
         "utility": "c",
         "ranges": "c",
-        "*.def": "c"
+        "*.def": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "random": "c",
+        "format": "c",
+        "*.tcc": "c"
     },
     "[markdown]": {
         "editor.trimAutoWhitespace": false,

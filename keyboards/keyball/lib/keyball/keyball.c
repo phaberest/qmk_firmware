@@ -440,10 +440,10 @@ uint16_t keyball_get_cpi(void) {
 
 void keyball_set_cpi(uint16_t cpi) {
     keyball.cpi_value   = cpi;
-    printf("set cpi: %u\n", keyball.cpi_value);
+    // printf("set cpi: %u\n", keyball.cpi_value);
     pointing_device_set_cpi_on_side(true, keyball.cpi_value);
     pointing_device_set_cpi_on_side(false, keyball.cpi_value);
-    printf("actual cpi: %u\n", pointing_device_get_cpi());
+    // printf("actual cpi: %u\n", pointing_device_get_cpi());
 }
 
 //////////////////////////////////////////////////////////////////////////////

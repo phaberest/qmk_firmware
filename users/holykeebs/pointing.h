@@ -31,7 +31,7 @@ typedef struct PACKED {
     bool drag_scroll : 1;
     float pointer_default_multiplier;
     float pointer_sniping_multiplier;
-    int8_t pointer_scroll_buffer_size;
+    uint8_t pointer_scroll_buffer_size;
 } hk_pointer_state_t;
 
 #define HK_OLED_MAX_PRESSING_KEYCODES 6

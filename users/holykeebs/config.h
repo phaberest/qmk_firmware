@@ -19,6 +19,14 @@
 #undef EE_HANDS
 #undef MASTER_RIGHT
 
+#if defined(HK_MASTER_LEFT)
+    #define MASTER_LEFT
+#elif defined(HK_MASTER_RIGHT)
+    #define MASTER_RIGHT
+#else
+    #error "HK_MASTER_LEFT or HK_MASTER_RIGHT not defined in rules.mk"
+#endif
+
 #ifdef SPLIT_KEYBOARD
     #define SERIAL_USART_TX_PIN GP1
 #endif
