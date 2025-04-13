@@ -6,6 +6,8 @@ ifdef POINTING_DEVICE
 endif
 
 CONSOLE_ENABLE = no
+EXTRAKEY_ENABLE = yes
+MOUSEKEY_ENABLE = yes
 SERIAL_DRIVER = vendor
 
 ifdef POINTING_DEVICE
@@ -520,8 +522,6 @@ ifeq ($(strip $(POINTING_DEVICE)), cirque40_trackpoint)
 	MSG_POINTING_DEVICE = cirque40 touchpad (left), trackpoint (right); built for side = $(SIDE)
 	MASTER_SIDE = right
 endif
-
-MOUSEKEY_ENABLE = yes
 
 ifeq ($(strip $(MASTER_SIDE)), left)
 	MSG_MASTER_SIDE = left

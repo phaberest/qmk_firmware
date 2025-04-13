@@ -29,6 +29,10 @@
 
 #ifdef SPLIT_KEYBOARD
     #define SERIAL_USART_TX_PIN GP1
+
+    // This helps in setups where the keyboard isn't recognized on boot if it's already plugged in.
+    #define SPLIT_WATCHDOG_ENABLE
+    #define SPLIT_WATCHDOG_TIMEOUT 3000
 #endif
 
 #ifdef HK_POINTING_DEVICE_RIGHT_PIMORONI
