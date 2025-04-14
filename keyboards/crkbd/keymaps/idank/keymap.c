@@ -25,17 +25,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define QK_C_EEPROM QK_CLEAR_EEPROM
 
+enum zero_sixty_layers {
+    _QWERTY,
+    _COLEMAK,
+    _LOWER,
+    _RAISE,
+    _ADJUST
+  };
+
 enum custom_keycodes {
     BSP_DEL = QK_USER_0,
-    SWITCH,
     KC_PSTRING,
     KC_TABWIN
 };
 
+#define KC_QWERTY DF(_QWERTY)
+#define KC_COLEMAK DF(_COLEMAK)
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-  [0] = LAYOUT_split_3x6_3(
+  [_QWERTY] = LAYOUT_split_3x6_3(
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-  KC_TAB,    KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN,  BSP_DEL,
+  KC_TAB,    KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                              KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN,  BSP_DEL,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       SC_LSPO,    KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,    KC_O,  KC_QUOT,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -46,31 +56,44 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   ),
 
-  [1] = LAYOUT_split_3x6_3(
+  [_COLEMAK] = LAYOUT_split_3x6_3(
+    //,-----------------------------------------------------.                    ,-----------------------------------------------------.
+         KC_TAB,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                         KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,  BSP_DEL,
+    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+        SC_LSPO,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, KC_QUOT,
+    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+        SC_RSPC,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH,RSFT_T(KC_ESC),
+    //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+                                            KC_RALT, TL_LOWR,  KC_SPC,     KC_ENT, TL_UPPR, RCTL_T(KC_TABWIN)
+                                        //`--------------------------'  `--------------------------'
+
+  ),
+
+  [_LOWER] = LAYOUT_split_3x6_3(
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
        KC_TAB,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0, BSP_DEL,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-  SC_LSPO, KC_PSTRING, KC_BTN4, KC_BTN5, KC_BTN1, HK_DRAGSCROLL_MODE,            KC_LEFT, KC_DOWN,   KC_UP,KC_RIGHT, XXXXXXX, XXXXXXX,
+      SC_LSPO, KC_BTN3, KC_BTN4, KC_BTN5, KC_BTN1, HK_DRAGSCROLL_MODE,           KC_LEFT, KC_DOWN,   KC_UP,KC_RIGHT, XXXXXXX,KC_QWERTY,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-  SC_RSPC, XXXXXXX, XXXXXXX, KC_BTN3, KC_BTN2, HK_SNIPING_MODE,               XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+      SC_RSPC, KC_PSTRING, XXXXXXX, XXXXXXX, KC_BTN2, HK_SNIPING_MODE,           XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,KC_COLEMAK,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           KC_RALT, _______,  KC_SPC,     KC_ENT, _______, KC_LGUI
                                       //`--------------------------'  `--------------------------'
   ),
 
-  [2] = LAYOUT_split_3x6_3(
+  [_RAISE] = LAYOUT_split_3x6_3(
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
        KC_TAB, KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,                      KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_MINS,  KC_EQL, KC_LBRC, KC_RBRC, KC_BSLS,  KC_GRV,
+      KC_LCTL, KC_BSLS, KC_LBRC, KC_RBRC,  KC_EQL, KC_MINS,                      KC_MINS,  KC_MEDIA_PLAY_PAUSE, KC_AUDIO_VOL_DOWN, KC_AUDIO_VOL_UP, KC_AUDIO_MUTE,  KC_GRV,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_BACKSLASH, KC_TILD,
+      KC_LSFT, KC_BACKSLASH, KC_LCBR, KC_RCBR, KC_PLUS, KC_UNDS,                 KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_BACKSLASH, KC_TILD,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                          KC_RALT, _______,  KC_SPC,     KC_ENT, _______, KC_RALT
+                                          KC_LGUI, _______,  KC_SPC,     KC_ENT, _______, KC_RALT
                                       //`--------------------------'  `--------------------------'
   ),
 
-  [3] = LAYOUT_split_3x6_3(
+  [_ADJUST] = LAYOUT_split_3x6_3(
   //,------------------------------------------------------------------------------.                   ,-----------------------------------------------------------------------------.
           QK_BOOT,     HK_DUMP,     HK_SAVE,     HK_RESET,     XXXXXXX, HK_C_SCROLL,                         XXXXXXX,     XXXXXXX,     XXXXXXX,     XXXXXXX,     XXXXXXX,     QK_BOOT,
   //|------------+------------+------------+-------------+------------+------------|                   |------------+------------+------------+------------+------------+------------|
@@ -82,8 +105,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                                        //`----------------------------------' `----------------------------------'
   )
 };
-
-uint16_t key_timer;
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record){
   static uint8_t saved_mods   = 0;
@@ -118,18 +139,6 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record){
             return false;        // Return false to ignore further processing of key
         }
         break;
-    case SWITCH:
-    //     if (record->event.pressed) {
-    //         key_timer = timer_read();
-    //         register_code(KC_LALT);
-    //     } else {
-    //         unregister_code(KC_LALT);
-    //         if (timer_elapsed(key_timer) < TAPPING_TERM) {
-    //             set_single_persistent_default_layer(get_highest_layer(default_layer_state) == _QWERTY ? _BASE : _QWERTY);
-    //             tap_code16(C(LOPT(KC_SPACE)));
-    //         }
-    //     }
-    //     break;
     default:
         break;
   }
