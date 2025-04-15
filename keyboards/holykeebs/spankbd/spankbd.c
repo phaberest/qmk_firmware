@@ -3,7 +3,7 @@
 
 #include "quantum.h"
 
-#ifdef OLED_ENABLE
+#if defined(OLED_ENABLE) && !defined(HK_OLED_ENABLE)
 
 __attribute__((weak)) void oled_render_logo(void) {
     // [span) logo

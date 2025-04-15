@@ -111,12 +111,10 @@
     #define HK_SPLIT_SYNC_STATE
 #endif
 
-#ifdef OLED_ENABLE
-    #ifndef OLED_FONT_H
-    #    define OLED_FONT_H "users/holykeebs/logofont/logofont.c"
-    #    define OLED_FONT_START 32
-    #    define OLED_FONT_END 195
-    #endif
+#ifdef HK_OLED_ENABLE
+#    define OLED_FONT_H "users/holykeebs/logofont/logofont.c"
+#    define OLED_FONT_START 32
+#    define OLED_FONT_END 195
 #endif
 
 #ifdef HK_SPLIT_SYNC_STATE

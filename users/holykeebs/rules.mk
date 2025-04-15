@@ -536,13 +536,16 @@ endif
 
 ifeq ($(strip $(OLED)), yes)
 	OPT_DEFS += -DOLED_ENABLE
+	OPT_DEFS += -DHK_OLED_ENABLE
 	OLED_ENABLE     = yes
 	OLED_DRIVER     = ssd1306
 	MSG_OLED = yes
-
-	ifdef POINTING_DEVICE
-		SRC += $(USER_PATH)/oled.c
-	endif
+	SRC += $(USER_PATH)/oled.c
+else ifeq ($(strip $(OLED)), stock)
+	OPT_DEFS += -DOLED_ENABLE
+	OLED_ENABLE     = yes
+	OLED_DRIVER     = ssd1306
+	MSG_OLED = yes
 else
 	OLED_ENABLE     = no
 	MSG_OLED = no
