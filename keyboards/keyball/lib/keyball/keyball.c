@@ -26,6 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 const uint16_t CPI_DEFAULT    = KEYBALL_CPI_DEFAULT;
+// Anything above this value makes the cursor fly across the screen.
+const uint16_t CPI_MAX        = 3000 + 1;
 const uint8_t SCROLL_DIV_MAX = 7;
 
 const uint16_t AML_TIMEOUT_MIN = 100;
@@ -105,6 +107,13 @@ static const char *format_4d(int16_t d) {
         d /= 10;
     }
     buf[0] = lead;
+    return buf;
+}
+
+static const char *format_cpi(int16_t d) {
+    static char buf[10] = {0};
+
+    sprintf(buf, "%5d", d);
     return buf;
 }
 
@@ -296,7 +305,8 @@ void keyball_oled_render_ballinfo(void) {
 
     // 2nd line, empty label and CPI
     oled_write_P(PSTR("    \xB1\xBC\xBD"), false);
-    oled_write(format_4d(keyball_get_cpi()), false);
+    oled_write(format_cpi(keyball_get_cpi()), false);
+    oled_write_char(' ', false);
 
     // indicate scroll snap mode: "VT" (vertical), "HN" (horiozntal), and "SCR" (free)
 #if 1 && KEYBALL_SCROLLSNAP_ENABLE == 2
@@ -439,11 +449,15 @@ uint16_t keyball_get_cpi(void) {
 }
 
 void keyball_set_cpi(uint16_t cpi) {
+    if (cpi > CPI_MAX + 1) {
+        cpi = CPI_MAX;
+    }
+
     keyball.cpi_value   = cpi;
-    // printf("set cpi: %u\n", keyball.cpi_value);
+    dprintf("set cpi: %u\n", keyball.cpi_value);
     pointing_device_set_cpi_on_side(true, keyball.cpi_value);
     pointing_device_set_cpi_on_side(false, keyball.cpi_value);
-    // printf("actual cpi: %u\n", pointing_device_get_cpi());
+    dprintf("actual after cpi: %u\n", pointing_device_get_cpi());
 }
 
 //////////////////////////////////////////////////////////////////////////////
