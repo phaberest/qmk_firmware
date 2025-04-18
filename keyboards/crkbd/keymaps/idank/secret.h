@@ -1,1 +1,1 @@
-#define PASS "cdnjfghbv"
+#define PASS "pass"
