@@ -254,7 +254,7 @@ __attribute__((weak)) bool pointing_device_task(void) {
     };
 #endif
 
-#if (POINTING_DEVICE_TASK_THROTTLE_MS > 0)
+#if (POINTING_DEVICE_TASK_THROTTLE_MS > 0) && !defined(POINTING_DEVICE_GET_REPORT_THROTTLE)
     static uint32_t last_exec = 0;
     if (timer_elapsed32(last_exec) < POINTING_DEVICE_TASK_THROTTLE_MS) {
         return false;
@@ -278,9 +278,26 @@ __attribute__((weak)) bool pointing_device_task(void) {
 #if defined(SPLIT_POINTING_ENABLE)
 #    if defined(POINTING_DEVICE_COMBINED)
         static uint8_t old_buttons = 0;
-        local_mouse_report.buttons = old_buttons;
-        local_mouse_report         = pointing_device_driver->get_report(local_mouse_report);
-        old_buttons                = local_mouse_report.buttons;
+
+        bool skip_local = false;
+        #if (POINTING_DEVICE_TASK_THROTTLE_MS > 0) && defined(POINTING_DEVICE_GET_REPORT_THROTTLE)
+            static uint32_t last_get_report = 0;
+            if (timer_elapsed32(last_get_report) < POINTING_DEVICE_TASK_THROTTLE_MS) {
+                skip_local = true;
+                local_mouse_report.x = 0;
+                local_mouse_report.y = 0;
+                local_mouse_report.h = 0;
+                local_mouse_report.v = 0;
+            }
+            if (!skip_local) {
+                last_get_report = timer_read32();
+            }
+        #endif
+        if (!skip_local) {
+            local_mouse_report.buttons = old_buttons;
+            local_mouse_report         = pointing_device_driver->get_report(local_mouse_report);
+            old_buttons                = local_mouse_report.buttons;
+        }
 #    elif defined(POINTING_DEVICE_LEFT) || defined(POINTING_DEVICE_RIGHT)
         local_mouse_report = POINTING_DEVICE_THIS_SIDE ? pointing_device_driver->get_report(local_mouse_report) : shared_mouse_report;
 #    else
