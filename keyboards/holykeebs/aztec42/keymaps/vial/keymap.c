@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include QMK_KEYBOARD_H
+#include "qp.h"
+#include "qp_comms.h"
+#include "qp_st7735.h"
+#include "qp_st77xx_opcodes.h"
+#include "color.h"
+#include "qp_lvgl.h"
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_split_3x6_3(
@@ -30,3 +36,35 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                              KC_LGUI, _______,  KC_SPC,     KC_ENT, _______, KC_RALT
     )
 };
+
+painter_device_t display;
+
+void keyboard_post_init_kb(void) {
+    wait_ms(LCD_WAIT_TIME);
+
+    // Initialise the LCD
+    display = qp_st7735_make_spi_device(LCD_HEIGHT, LCD_WIDTH, LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN, LCD_SPI_DIVISOR, 0);
+    if (!qp_init(display, QP_ROTATION_270) || !qp_power(display, true) || !qp_lvgl_attach(display)) return;
+
+    #ifdef LCD_INVERT_COLOUR
+    qp_comms_start(display);
+    qp_comms_command(display, ST77XX_CMD_INVERT_ON);
+    qp_comms_stop(display);
+    #endif
+
+    // qp_rect(display, 0, 0, LCD_WIDTH, LCD_HEIGHT, 0, 0, 0, true);
+    // qp_flush(display);
+
+    // qp_circle(display, LCD_WIDTH/2, LCD_HEIGHT/2, 10, 0, 0, 0, true);
+    // qp_flush(display);
+    lv_obj_t * slider = lv_slider_create(lv_scr_act());
+    lv_obj_set_width(slider, 120);                          /*Set the width*/
+    lv_obj_center(slider);                                  /*Align to the center of the parent (screen)*/
+
+    /*Create a label below the slider*/
+    lv_obj_t * label = lv_label_create(lv_scr_act());
+    lv_label_set_text(label, "0");
+    lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);
+
+    keyboard_post_init_user();
+}
