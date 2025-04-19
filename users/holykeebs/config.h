@@ -36,7 +36,11 @@
 #endif
 
 #ifdef HK_POINTING_DEVICE_RIGHT_PIMORONI
-    #define POINTING_DEVICE_ROTATION_90_RIGHT
+    #ifdef POINTING_DEVICE_COMBINED
+        #define POINTING_DEVICE_ROTATION_90_RIGHT
+    #else
+        #define POINTING_DEVICE_ROTATION_90
+    #endif
 
     // Not needed due to the block below, but it's untested for Cirque since they've been retired.
     // #if defined(HK_POINTING_DEVICE_LEFT_CIRQUE40) || defined(HK_POINTING_DEVICE_LEFT_CIRQUE35)
