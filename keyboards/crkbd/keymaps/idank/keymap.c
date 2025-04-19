@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include QMK_KEYBOARD_H
 #include "keymap_us_international.h"
-#include "keyboards/crkbd/keymaps/idank/secret.h"
+#include "keyboards/crkbd/keymaps/idank/pass.h"
 #include "users/holykeebs/holykeebs.h"
 
 #define QK_C_EEPROM QK_CLEAR_EEPROM
