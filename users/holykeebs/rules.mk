@@ -5,7 +5,10 @@ ifdef POINTING_DEVICE
 	endif
 endif
 
-# CONSOLE_ENABLE = no
+ifeq ($(strip $(CONSOLE)), yes)
+	CONSOLE_ENABLE = yes
+endif
+
 TRI_LAYER_ENABLE = yes
 EXTRAKEY_ENABLE = yes
 MOUSEKEY_ENABLE = yes

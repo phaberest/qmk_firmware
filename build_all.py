@@ -59,61 +59,71 @@ class Command:
             else:
                 parts.append('none')
 
+        console = False
         for argument in self.arguments:
             if argument.startswith('SIDE='):
                 side = argument[len('SIDE='):]
                 parts.append('flash_on_' + side)
+            elif argument == 'CONSOLE=yes':
+                console = True
+        if console:
+            parts.insert(0, 'debug')
         return '_'.join(parts)
 
 def build_commands():
     commands = []
     skip_pointing_devices =[('trackpoint', 'trackpoint'), ('cirque35', 'cirque40'), ('cirque40', 'cirque35')]
-    for kb in ['crkbd/rev1', 'holykeebs/spankbd', 'lily58/rev1', 'holykeebs/sweeq']:
-        for left_pointing_device in ['trackpoint', 'trackball', 'cirque35', 'cirque40', 'tps43', '']:
-            for right_pointing_device in ['trackpoint', 'trackball', 'cirque35', 'cirque40', 'tps43', '']:
-                if (left_pointing_device, right_pointing_device) in skip_pointing_devices:
-                    print('Skipping configuration: ', left_pointing_device, right_pointing_device)
-                    continue
-                # by default use the via keymap, but if we have a pointing device, pull in the hk keymap with the pointing
-                # device layer
-                keymap = 'via'
-                if left_pointing_device or right_pointing_device:
-                    keymap = 'hk'
-                if left_pointing_device and right_pointing_device:
-                    for side in ('left', 'right'):
-                        command = Command(kb, keymap)
-                        command.set_pointing(left_pointing_device, 'left')
-                        command.set_pointing(right_pointing_device, 'right')
-                        command.add_argument(f'POINTING_DEVICE={left_pointing_device}_{right_pointing_device}')
-                        command.add_argument(f'SIDE={side}')
-                        if left_pointing_device == 'trackball' or right_pointing_device == 'trackball':
-                            command.add_argument(f'TRACKBALL_RGB_RAINBOW=yes')
-                        commands.append(command)
-                else:
-                    for with_oled in [True, False]:
-                        command = Command(kb, keymap)
-                        if with_oled:
-                            command.oled = 'stock' if keymap == 'via' else 'yes'
-                            # flip the OLED if there's a pointing device so the one on the peripheral side shows the
-                            # layer and keylogger, otherwise we get the logo
-                            if left_pointing_device or right_pointing_device:
-                                command.add_argument(f'OLED_FLIP=yes')
-                        if left_pointing_device:
+    for console_enabled in [True, False]:
+        for kb in ['crkbd/rev1', 'holykeebs/spankbd', 'lily58/rev1', 'holykeebs/sweeq']:
+            for left_pointing_device in ['trackpoint', 'trackball', 'cirque35', 'cirque40', 'tps43', '']:
+                for right_pointing_device in ['trackpoint', 'trackball', 'cirque35', 'cirque40', 'tps43', '']:
+                    if (left_pointing_device, right_pointing_device) in skip_pointing_devices:
+                        print('Skipping configuration: ', left_pointing_device, right_pointing_device)
+                        continue
+                    # by default use the via keymap, but if we have a pointing device, pull in the hk keymap with the pointing
+                    # device layer
+                    keymap = 'via'
+                    if left_pointing_device or right_pointing_device:
+                        keymap = 'hk'
+                    if left_pointing_device and right_pointing_device:
+                        for side in ('left', 'right'):
+                            command = Command(kb, keymap)
+                            if keymap == 'hk' and console_enabled:
+                                command.add_argument(f'CONSOLE=yes')
                             command.set_pointing(left_pointing_device, 'left')
-                            command.add_argument(f'POINTING_DEVICE={left_pointing_device}')
-                            command.add_argument(f'POINTING_DEVICE_POSITION=left')
-                            if left_pointing_device == 'trackball':
-                                command.add_argument(f'TRACKBALL_RGB_RAINBOW=yes')
-                        elif right_pointing_device:
                             command.set_pointing(right_pointing_device, 'right')
-                            command.add_argument(f'POINTING_DEVICE={right_pointing_device}')
-                            command.add_argument(f'POINTING_DEVICE_POSITION=right')
-                            if right_pointing_device == 'trackball':
+                            command.add_argument(f'POINTING_DEVICE={left_pointing_device}_{right_pointing_device}')
+                            command.add_argument(f'SIDE={side}')
+                            if left_pointing_device == 'trackball' or right_pointing_device == 'trackball':
                                 command.add_argument(f'TRACKBALL_RGB_RAINBOW=yes')
-                        else:
-                            pass
+                            commands.append(command)
+                    else:
+                        for with_oled in [True, False]:
+                            command = Command(kb, keymap)
+                            if keymap == 'hk' and console_enabled:
+                                command.add_argument(f'CONSOLE=yes')
+                            if with_oled:
+                                command.oled = 'stock' if keymap == 'via' else 'yes'
+                                # flip the OLED if there's a pointing device so the one on the peripheral side shows the
+                                # layer and keylogger, otherwise we get the logo
+                                if left_pointing_device or right_pointing_device:
+                                    command.add_argument(f'OLED_FLIP=yes')
+                            if left_pointing_device:
+                                command.set_pointing(left_pointing_device, 'left')
+                                command.add_argument(f'POINTING_DEVICE={left_pointing_device}')
+                                command.add_argument(f'POINTING_DEVICE_POSITION=left')
+                                if left_pointing_device == 'trackball':
+                                    command.add_argument(f'TRACKBALL_RGB_RAINBOW=yes')
+                            elif right_pointing_device:
+                                command.set_pointing(right_pointing_device, 'right')
+                                command.add_argument(f'POINTING_DEVICE={right_pointing_device}')
+                                command.add_argument(f'POINTING_DEVICE_POSITION=right')
+                                if right_pointing_device == 'trackball':
+                                    command.add_argument(f'TRACKBALL_RGB_RAINBOW=yes')
+                            else:
+                                pass
 
-                        commands.append(command)
+                            commands.append(command)
 
     return commands
 

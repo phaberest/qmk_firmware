@@ -25,13 +25,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define QK_C_EEPROM QK_CLEAR_EEPROM
 
-enum zero_sixty_layers {
+enum layers {
     _COLEMAK,
     _QWERTY,
     _LOWER,
     _RAISE,
     _ADJUST
-  };
+};
 
 enum custom_keycodes {
     BSP_DEL = QK_USER_0,
@@ -75,7 +75,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       SC_LSPO, KC_BTN3, KC_BTN4, KC_BTN5, KC_BTN1, HK_DRAGSCROLL_MODE,           KC_LEFT, KC_DOWN,   KC_UP,KC_RIGHT, XXXXXXX,KC_QWERTY,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      SC_RSPC, KC_PSTRING, XXXXXXX, XXXXXXX, KC_BTN2, HK_SNIPING_MODE,           XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,KC_COLEMAK,
+      SC_RSPC, KC_PSTRING, XXXXXXX, XXXXXXX, KC_BTN2, HK_SNIPING_MODE,           KC_HOME, KC_PAGE_DOWN, KC_PAGE_UP, KC_END, XXXXXXX,KC_COLEMAK,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           KC_RALT, _______,  KC_SPC,     KC_ENT, _______, KC_LGUI
                                       //`--------------------------'  `--------------------------'
