@@ -379,7 +379,6 @@ void hk_process_mouse_report(const hk_pointer_state_t* pointer_state, report_mou
     if (mouse_report->x * rounding_carry_x < 0) rounding_carry_x = 0;
     if (mouse_report->y * rounding_carry_y < 0) rounding_carry_y = 0;
 
-
     // First, scale the mouse movement.
     const report_mouse_t mouse_report_copy = *mouse_report;
     const float new_x = scale_movement(pointer_state, mouse_report->x);

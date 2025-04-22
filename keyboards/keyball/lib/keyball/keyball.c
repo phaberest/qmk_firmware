@@ -140,35 +140,37 @@ void pointing_device_init_kb(void) {
 
 }
 
-__attribute__((weak)) void keyball_on_apply_motion_to_mouse_move(report_mouse_t *r, report_mouse_t *o, bool is_left) {
-#if KEYBALL_MODEL == 61 || KEYBALL_MODEL == 39 || KEYBALL_MODEL == 147 || KEYBALL_MODEL == 44
-    o->x = clip2int8(r->y);
-    o->y = clip2int8(r->x);
-    if (is_left) {
-        o->x = -o->x;
-        o->y = -o->y;
-    }
-#else
-#    error("unknown Keyball model")
-#endif
+__attribute__((weak)) void keyball_on_apply_motion_to_mouse_move(report_mouse_t *report, report_mouse_t *output, bool is_left) {
+// #if KEYBALL_MODEL == 61 || KEYBALL_MODEL == 39 || KEYBALL_MODEL == 147 || KEYBALL_MODEL == 44
+//     output->x = clip2int8(report->y);
+//     output->y = clip2int8(report->x);
+//     if (is_left) {
+//         output->x = -output->x;
+//         output->y = -output->y;
+//     }
+// #else
+// #    error("unknown Keyball model")
+// #endif
+    output->x = report->x;
+    output->y = report->y;
     // clear motion
-    r->x = 0;
-    r->y = 0;
+    report->x = 0;
+    report->y = 0;
 }
 
-__attribute__((weak)) void keyball_on_apply_motion_to_mouse_scroll(report_mouse_t *r, report_mouse_t *o, bool is_left) {
+__attribute__((weak)) void keyball_on_apply_motion_to_mouse_scroll(report_mouse_t *report, report_mouse_t *output, bool is_left) {
     // consume motion of trackball.
     int16_t div = 1 << (keyball_get_scroll_div() - 1);
-    int16_t x = divmod16(&r->x, div);
-    int16_t y = divmod16(&r->y, div);
+    int16_t x = divmod16(&report->x, div);
+    int16_t y = divmod16(&report->y, div);
 
     // apply to mouse report.
 #if KEYBALL_MODEL == 61 || KEYBALL_MODEL == 39 || KEYBALL_MODEL == 147 || KEYBALL_MODEL == 44
-    o->h = clip2int8(y);
-    o->v = -clip2int8(x);
+    output->h = clip2int8(y);
+    output->v = -clip2int8(x);
     if (is_left) {
-        o->h = -o->h;
-        o->v = -o->v;
+        output->h = -output->h;
+        output->v = -output->v;
     }
 #else
 #    error("unknown Keyball model")
@@ -178,23 +180,23 @@ __attribute__((weak)) void keyball_on_apply_motion_to_mouse_scroll(report_mouse_
 #if KEYBALL_SCROLLSNAP_ENABLE == 1
     // Old behavior up to 1.3.2)
     uint32_t now = timer_read32();
-    if (o->h != 0 || o->v != 0) {
+    if (output->h != 0 || output->v != 0) {
         keyball.scroll_snap_last = now;
     } else if (TIMER_DIFF_32(now, keyball.scroll_snap_last) >= KEYBALL_SCROLLSNAP_RESET_TIMER) {
         keyball.scroll_snap_tension_h = 0;
     }
     if (abs(keyball.scroll_snap_tension_h) < KEYBALL_SCROLLSNAP_TENSION_THRESHOLD) {
         keyball.scroll_snap_tension_h += y;
-        o->h = 0;
+        output->h = 0;
     }
 #elif KEYBALL_SCROLLSNAP_ENABLE == 2
     // New behavior
     switch (keyball_get_scrollsnap_mode()) {
         case KEYBALL_SCROLLSNAP_MODE_VERTICAL:
-            o->h = 0;
+            output->h = 0;
             break;
         case KEYBALL_SCROLLSNAP_MODE_HORIZONTAL:
-            o->v = 0;
+            output->v = 0;
             break;
         default:
             // pass by without doing anything
@@ -203,21 +205,23 @@ __attribute__((weak)) void keyball_on_apply_motion_to_mouse_scroll(report_mouse_
 #endif
 }
 
-static void motion_to_mouse(report_mouse_t *r, report_mouse_t *o, bool is_left, bool as_scroll) {
+static void motion_to_mouse(report_mouse_t *report, report_mouse_t *output, bool is_left, bool as_scroll) {
     if (as_scroll) {
-        keyball_on_apply_motion_to_mouse_scroll(r, o, is_left);
+        keyball_on_apply_motion_to_mouse_scroll(report, output, is_left);
     } else {
-        keyball_on_apply_motion_to_mouse_move(r, o, is_left);
+        keyball_on_apply_motion_to_mouse_move(report, output, is_left);
     }
 }
 
 report_mouse_t pointing_device_task_combined_kb(report_mouse_t left_report, report_mouse_t right_report) {
-    report_mouse_t rep = {0};
-    motion_to_mouse(is_keyboard_left() ? &left_report : &right_report, &rep, is_keyboard_left(), keyball.scroll_mode);
-    motion_to_mouse(is_keyboard_left() ? &right_report : &left_report, &rep, !is_keyboard_left(), keyball.scroll_mode ^ keyball.this_have_ball);
+    report_mouse_t output = {0};
+    report_mouse_t *this_report = is_keyboard_left() ? &left_report : &right_report;
+    report_mouse_t *that_report = is_keyboard_left() ? &right_report : &left_report;
+    motion_to_mouse(this_report, &output, is_keyboard_left(), keyball.scroll_mode);
+    motion_to_mouse(that_report, &output, !is_keyboard_left(), keyball.scroll_mode ^ keyball.this_have_ball);
     // store mouse report for OLED.
-    keyball.last_mouse = rep;
-    return rep;
+    keyball.last_mouse = output;
+    return output;
 }
 
 //////////////////////////////////////////////////////////////////////////////

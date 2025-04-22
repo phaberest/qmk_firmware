@@ -33,14 +33,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // #define SPLIT_USB_DETECT
 // #define SPLIT_USB_TIMEOUT       500
 
-// This has been reported to help with recognizing the keyboard after booting up when its USB is already connected.
-#define SPLIT_WATCHDOG_ENABLE
-#define SPLIT_WATCHDOG_TIMEOUT 3000
 
 #define SPLIT_TRANSACTION_IDS_KB KEYBALL_GET_INFO
 
 // RGB LED settings
-#define WS2812_DI_PIN       GP0
 #ifdef RGBLIGHT_ENABLE
 #    define RGBLIGHT_LED_COUNT      74
 #    define RGBLED_SPLIT    { 37, 37 }
@@ -56,29 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    ifndef RGBLIGHT_SAT_STEP
 #        define RGBLIGHT_SAT_STEP   17
 #    endif
-#    define RGBLIGHT_DEFAULT_MODE RGBLIGHT_MODE_RAINBOW_SWIRL
 #endif
 #ifdef RGB_MATRIX_ENABLE
 #    define RGB_MATRIX_SPLIT    { 37, 37 }
 #endif
-
-#ifndef OLED_FONT_H
-#    define OLED_FONT_H "keyboards/keyball/lib/logofont/logofont.c"
-#    define OLED_FONT_START 32
-#    define OLED_FONT_END 195
-#endif
-
-#if !defined(LAYER_STATE_8BIT) && !defined(LAYER_STATE_16BIT) && !defined(LAYER_STATE_32BIT)
-#    define LAYER_STATE_8BIT
-#endif
-
-#define SPI_DRIVER SPID0
-#define SPI_SCK_PIN GP22
-#define SPI_MISO_PIN GP20
-#define SPI_MOSI_PIN GP23
-#define PMW33XX_CS_PIN GP21
-#define SPLIT_POINTING_ENABLE
-#define POINTING_DEVICE_COMBINED
-
-#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
-#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 1000U
