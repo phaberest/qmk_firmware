@@ -153,9 +153,7 @@ __attribute__((weak)) void keyball_on_apply_motion_to_mouse_move(report_mouse_t 
 // #endif
     output->x = report->x;
     output->y = report->y;
-    // clear motion
-    report->x = 0;
-    report->y = 0;
+
 }
 
 __attribute__((weak)) void keyball_on_apply_motion_to_mouse_scroll(report_mouse_t *report, report_mouse_t *output, bool is_left) {
@@ -166,12 +164,13 @@ __attribute__((weak)) void keyball_on_apply_motion_to_mouse_scroll(report_mouse_
 
     // apply to mouse report.
 #if KEYBALL_MODEL == 61 || KEYBALL_MODEL == 39 || KEYBALL_MODEL == 147 || KEYBALL_MODEL == 44
-    output->h = clip2int8(y);
-    output->v = -clip2int8(x);
+    output->h = -clip2int8(x);
+    output->v = clip2int8(y);
     if (is_left) {
         output->h = -output->h;
         output->v = -output->v;
     }
+
 #else
 #    error("unknown Keyball model")
 #endif
