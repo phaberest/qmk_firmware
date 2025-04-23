@@ -25,7 +25,8 @@
         "random": "c",
         "format": "c",
         "*.tcc": "c",
-        "chrono": "c"
+        "chrono": "c",
+        "cstdlib": "c"
     },
     "[markdown]": {
         "editor.trimAutoWhitespace": false,
