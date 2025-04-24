@@ -20,6 +20,12 @@
 #define PMW33XX_CS_PIN GP21
 #define SPLIT_POINTING_ENABLE
 #define POINTING_DEVICE_COMBINED
+
+// Rotation settings for left side trackball.
+#define POINTING_DEVICE_ROTATION_90
+#define POINTING_DEVICE_INVERT_Y
+
+// Rotation settings for right side trackball.
 #define POINTING_DEVICE_ROTATION_270_RIGHT
 #define POINTING_DEVICE_INVERT_Y_RIGHT
 
