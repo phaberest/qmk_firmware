@@ -17,8 +17,7 @@ SERIAL_DRIVER = vendor
 POINTING_DEVICE_ENABLE = yes
 POINTING_DEVICE_DRIVER = pmw3360
 
-# This is unnecessary for processing KC_MS_BTN*.
-MOUSEKEY_ENABLE = no
+MOUSEKEY_ENABLE = yes
 
 # Enabled only one of RGBLIGHT and RGB_MATRIX if necessary.
 RGBLIGHT_ENABLE = no        # Enable RGBLIGHT
