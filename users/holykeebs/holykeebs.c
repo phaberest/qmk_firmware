@@ -69,7 +69,7 @@ static void write_eeconfig(void) {
 }
 
 static void hk_configure_tps43_common(hk_pointer_state_t* state) {
-    state->pointer_default_multiplier = 1.5;
+    state->pointer_default_multiplier = 1.25;
     state->pointer_sniping_multiplier = 1.0;
     state->pointer_scroll_buffer_size = 5;
 }
