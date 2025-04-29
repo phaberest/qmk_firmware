@@ -30,13 +30,18 @@ class Command:
     def add_argument_raw(self, argument):
         self.arguments.append(argument)
 
+    def arguments_list(self):
+        a = self.arguments
+        if self.oled:
+            a.append('-e')
+            a.append(f'OLED=yes')
+        return a
+
     def build(self):
         return ' '.join(self.build_list())
 
     def build_list(self):
-        l = ['make', f'{self.kb}:{self.km}'] + self.arguments
-        if self.oled:
-            l.append(f'OLED={self.oled}')
+        l = ['make', f'{self.kb}:{self.km}'] + self.arguments_list()
         return l
 
     def file_name(self):

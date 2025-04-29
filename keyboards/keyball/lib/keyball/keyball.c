@@ -210,6 +210,10 @@ static void motion_to_mouse(report_mouse_t *report, report_mouse_t *output, bool
     } else {
         keyball_on_apply_motion_to_mouse_move(report, output, is_left);
     }
+
+    // clear motion
+    report->x = 0;
+    report->y = 0;
 }
 
 report_mouse_t pointing_device_task_combined_kb(report_mouse_t left_report, report_mouse_t right_report) {
