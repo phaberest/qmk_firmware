@@ -31,10 +31,10 @@ class Command:
         self.arguments.append(argument)
 
     def arguments_list(self):
-        a = self.arguments
+        a = list(self.arguments)
         if self.oled:
             a.append('-e')
-            a.append(f'OLED=yes')
+            a.append(f'OLED={self.oled}')
         return a
 
     def build(self):
@@ -50,19 +50,25 @@ class Command:
         parts.append(self.km)
 
         if not self.kb.startswith('keyball'):
-            if self.left_pointing_device:
-                parts.append(self.left_pointing_device)
-            elif self.oled:
-                parts.append('oled')
+            if not self.left_pointing_device and not self.right_pointing_device:
+                if self.oled:
+                    parts.append('oled')
+                else:
+                    parts.append('none')
             else:
-                parts.append('none')
+                if self.left_pointing_device:
+                    parts.append(self.left_pointing_device)
+                elif self.oled:
+                    parts.append('oled')
+                else:
+                    parts.append('none')
 
-            if self.right_pointing_device:
-                parts.append(self.right_pointing_device)
-            elif self.oled:
-                parts.append('oled')
-            else:
-                parts.append('none')
+                if self.right_pointing_device:
+                    parts.append(self.right_pointing_device)
+                elif self.oled:
+                    parts.append('oled')
+                else:
+                    parts.append('none')
 
         console = False
         for argument in self.arguments:
