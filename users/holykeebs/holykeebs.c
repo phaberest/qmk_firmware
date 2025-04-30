@@ -179,6 +179,20 @@ static hk_state_t init_state(void) {
             break;
     }
 
+    // Overrides the defaults for the case where the desired value is already known by the user. This only gets set
+    // if there's nothing saved in eeprom.
+    if (state.main.pointer_kind) {
+        #ifdef HK_MAIN_DEFAULT_POINTER_DEFAULT_MULTIPLIER
+            state.main.pointer_default_multiplier = HK_MAIN_DEFAULT_POINTER_DEFAULT_MULTIPLIER;
+        #endif
+        #ifdef HK_MAIN_DEFAULT_POINTER_SNIPING_MULTIPLIER
+            state.main.pointer_sniping_multiplier = HK_MAIN_DEFAULT_POINTER_SNIPING_MULTIPLIER;
+        #endif
+        #ifdef HK_MAIN_DEFAULT_POINTER_SCROLL_BUFFER_SIZE
+            state.main.pointer_scroll_buffer_size = HK_MAIN_DEFAULT_POINTER_SCROLL_BUFFER_SIZE;
+        #endif
+    }
+
     if (state.peripheral.pointer_kind != POINTER_KIND_NONE) {
         switch (state.peripheral.pointer_kind) {
             case POINTER_KIND_TRACKPOINT:
@@ -199,6 +213,18 @@ static hk_state_t init_state(void) {
                 printf("init_state: unknown peripheral pointer kind\n");
                 break;
         }
+
+        // Overrides the defaults for the case where the desired value is already known by the user. This only gets set
+        // if there's nothing saved in eeprom.
+        #ifdef HK_PERIPHERAL_DEFAULT_POINTER_DEFAULT_MULTIPLIER
+            state.peripheral.pointer_default_multiplier = HK_PERIPHERAL_DEFAULT_POINTER_DEFAULT_MULTIPLIER;
+        #endif
+        #ifdef HK_PERIPHERAL_DEFAULT_POINTER_SNIPING_MULTIPLIER
+            state.peripheral.pointer_sniping_multiplier = HK_PERIPHERAL_DEFAULT_POINTER_SNIPING_MULTIPLIER;
+        #endif
+        #ifdef HK_PERIPHERAL_DEFAULT_POINTER_SCROLL_BUFFER_SIZE
+            state.peripheral.pointer_scroll_buffer_size = HK_PERIPHERAL_DEFAULT_POINTER_SCROLL_BUFFER_SIZE;
+        #endif
     }
 
     return state;

@@ -30,3 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define TRI_LAYER_LOWER_LAYER 2
 #define TRI_LAYER_UPPER_LAYER 3
 #define TRI_LAYER_ADJUST_LAYER 4
+
+#define HK_MAIN_DEFAULT_POINTER_DEFAULT_MULTIPLIER 3.5
+#define HK_PERIPHERAL_DEFAULT_POINTER_DEFAULT_MULTIPLIER 1

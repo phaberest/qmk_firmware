@@ -36,11 +36,9 @@ enum layers {
 enum custom_keycodes {
     BSP_DEL = QK_USER_0,
     KC_PSTRING,
+    KC_LAYOUT,
     KC_TABWIN
 };
-
-#define KC_QWERTY DF(_QWERTY)
-#define KC_COLEMAK DF(_COLEMAK)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_COLEMAK] = LAYOUT_split_3x6_3(
@@ -73,9 +71,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
        KC_TAB,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0, BSP_DEL,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      SC_LSPO, KC_BTN3, KC_BTN4, KC_BTN5, KC_BTN1, HK_DRAGSCROLL_MODE,           KC_LEFT, KC_DOWN,   KC_UP,KC_RIGHT, XXXXXXX,KC_QWERTY,
+      SC_LSPO, KC_BTN3, KC_BTN4, KC_BTN5, KC_BTN1, HK_DRAGSCROLL_MODE,           KC_LEFT, KC_DOWN,   KC_UP,KC_RIGHT, XXXXXXX,KC_LAYOUT,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      SC_RSPC, KC_PSTRING, XXXXXXX, XXXXXXX, KC_BTN2, HK_SNIPING_MODE,           KC_HOME, KC_PAGE_DOWN, KC_PAGE_UP, KC_END, XXXXXXX,KC_COLEMAK,
+      SC_RSPC, KC_PSTRING, XXXXXXX, XXXXXXX, KC_BTN2, HK_SNIPING_MODE,           KC_HOME, KC_PAGE_DOWN, KC_PAGE_UP, KC_END, XXXXXXX,RSFT_T(KC_ESC),
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           KC_RALT, _______,  KC_SPC,     KC_ENT, _______, KC_LGUI
                                       //`--------------------------'  `--------------------------'
@@ -85,9 +83,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
        KC_TAB, KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,                      KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LCTL, KC_BSLS, KC_LBRC, KC_RBRC,  KC_EQL, KC_MINS,                      KC_MINS,  KC_MEDIA_PLAY_PAUSE, KC_AUDIO_VOL_DOWN, KC_AUDIO_VOL_UP, KC_AUDIO_MUTE,  KC_GRV,
+      SC_LSPO, KC_BSLS, KC_LBRC, KC_RBRC,  KC_EQL, KC_MINS,                      KC_MINS,  KC_MEDIA_PLAY_PAUSE, KC_AUDIO_VOL_DOWN, KC_AUDIO_VOL_UP, KC_AUDIO_MUTE,  KC_GRV,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LSFT, KC_BACKSLASH, KC_LCBR, KC_RCBR, KC_PLUS, KC_UNDS,                 KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_BACKSLASH, KC_TILD,
+      SC_RSPC, KC_BACKSLASH, KC_LCBR, KC_RCBR, KC_PLUS, KC_UNDS,                 KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_BACKSLASH, KC_TILD,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           KC_LGUI, _______,  KC_SPC,     KC_ENT, _______, KC_RALT
                                       //`--------------------------'  `--------------------------'
@@ -107,10 +105,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record){
-  static uint8_t saved_mods   = 0;
+    static uint8_t saved_mods   = 0;
+    static bool layout_colemak = true;
 
-  switch (keycode){
-    case BSP_DEL:
+    if (keycode == BSP_DEL) {
         if (record->event.pressed) {
             saved_mods = get_mods() & MOD_MASK_SHIFT;
 
@@ -128,22 +126,31 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record){
             unregister_code(KC_BSPC);
         }
         return false;
-    case KC_PSTRING:
-        if (record->event.pressed) {
-            SEND_STRING(PASS);
-        }
-        break;
-    case RCTL_T(KC_TABWIN):
-        if (record->tap.count && record->event.pressed) {
-            tap_code16(G(KC_GRV));
-            return false;        // Return false to ignore further processing of key
-        }
-        break;
-    default:
-        break;
-  }
+    }
 
-  return true;
+    if (record->event.pressed) {
+        switch (keycode) {
+        case KC_PSTRING:
+            SEND_STRING(PASS);
+            break;
+        case KC_LAYOUT:
+            int desired_layout = layout_colemak ? _QWERTY : _COLEMAK;
+            set_single_default_layer(desired_layout);
+            layout_colemak = !layout_colemak;
+            return false;
+            break;
+        case RCTL_T(KC_TABWIN):
+            if (record->tap.count) {
+                tap_code16(G(KC_GRV));
+                return false;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    return true;
 }
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
