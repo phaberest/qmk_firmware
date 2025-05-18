@@ -108,9 +108,11 @@
         #endif
     #endif
 
-    // #define AZOTEQ_IQS5XX_TAP_ENABLE false
-    // #define AZOTEQ_IQS5XX_TWO_FINGER_TAP_ENABLE false
-    #define AZOTEQ_IQS5XX_PRESS_AND_HOLD_ENABLE false
+    // These are enabled by default.
+    // #define AZOTEQ_IQS5XX_TAP_ENABLE true
+    // #define AZOTEQ_IQS5XX_TWO_FINGER_TAP_ENABLE true
+    // #define AZOTEQ_IQS5XX_SCROLL_ENABLE true
+    #define AZOTEQ_IQS5XX_PRESS_AND_HOLD_ENABLE true
 #endif
 
 #ifdef POINTING_DEVICE_DRIVER_ps2
