@@ -130,7 +130,15 @@
     },
     "rgb_matrix": {
         "driver": "ws2812",
-        "max_brightness": 120
+        "max_brightness": 120,
+        "animations": {
+            "cycle_left_right": true
+        },
+        "default": {
+            "speed": 32,
+            "val": 64
+        },
+        "sleep": true
     },
     "rgblight": {
         "max_brightness": 120
