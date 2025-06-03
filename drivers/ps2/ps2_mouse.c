@@ -38,11 +38,20 @@ static inline void ps2_mouse_clear_report(report_mouse_t *mouse_report);
 static inline void ps2_mouse_enable_scrolling(void);
 static inline void ps2_mouse_scroll_button_task(report_mouse_t *mouse_report);
 
+static inline bool side_has_trackpoint(void) {
+#if defined(HK_POINTING_DEVICE_LEFT_TRACKPOINT) && defined(HK_POINTING_DEVICE_RIGHT_TRACKPOINT)
+    return true;
+#else
+    // holykeebs/rules.mk sets the side with the trackpoint to be main when there's only one trackpoint.
+    return is_keyboard_master();
+#endif
+}
+
 /* ============================= IMPLEMENTATION ============================ */
 
 /* supports only 3 button mouse at this time */
 void ps2_mouse_init(void) {
-    if (!is_keyboard_master()) {
+    if (!side_has_trackpoint()) {
         return;
     }
 
@@ -93,7 +102,7 @@ void ps2_mouse_task(void) {
 }
 
 bool ps2_mouse_read(report_mouse_t* mouse_report) {
-    if (!is_keyboard_master()) {
+    if (!side_has_trackpoint()) {
         return false;
     }
 

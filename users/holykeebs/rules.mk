@@ -1,4 +1,4 @@
-VALID_POINTING_DEVICE_CONFIGURATIONS := trackball tps43 cirque40 cirque35 tps43_tps43 cirque35_cirque35 cirque40_cirque40 trackball_trackball trackball_tps43 tps43_trackball trackball_cirque35 cirque35_trackball trackball_cirque40 cirque40_trackball trackpoint trackpoint_tps43 tps43_trackpoint trackpoint_trackball trackball_trackpoint trackpoint_cirque35 cirque35_trackpoint trackpoint_cirque40 cirque40_trackpoint cirque40_tps43 tps43_cirque40 cirque35_tps43 tps43_cirque35
+VALID_POINTING_DEVICE_CONFIGURATIONS := trackball tps43 cirque40 cirque35 tps43_tps43 cirque35_cirque35 cirque40_cirque40 trackball_trackball trackball_tps43 tps43_trackball trackball_cirque35 cirque35_trackball trackball_cirque40 cirque40_trackball trackpoint trackpoint_tps43 tps43_trackpoint trackpoint_trackball trackball_trackpoint trackpoint_cirque35 cirque35_trackpoint trackpoint_cirque40 cirque40_trackpoint cirque40_tps43 tps43_cirque40 cirque35_tps43 tps43_cirque35 trackpoint_trackpoint
 ifdef POINTING_DEVICE
     ifeq ($(filter $(POINTING_DEVICE),$(VALID_POINTING_DEVICE_CONFIGURATIONS)),)
         $(call CATASTROPHIC_ERROR,Invalid POINTING_DEVICE,POINTING_DEVICE="$(POINTING_DEVICE)" is not a valid pointing device configuration)
@@ -356,6 +356,22 @@ ifeq ($(strip $(POINTING_DEVICE)), cirque40_tps43)
     endif
 
 	MSG_POINTING_DEVICE = cirque40 touchpad (left), TPS43 touchpad (right); built for side = $(SIDE)
+	MASTER_SIDE = right
+endif
+
+ifeq ($(strip $(POINTING_DEVICE)), trackpoint_trackpoint)
+    OPT_DEFS += -DHK_POINTING_DEVICE_LEFT_TRACKPOINT
+    OPT_DEFS += -DHK_POINTING_DEVICE_RIGHT_TRACKPOINT
+
+    POINTING_DEVICE_ENABLE = yes
+    OPT_DEFS += -DSPLIT_POINTING_ENABLE
+    OPT_DEFS += -DPOINTING_DEVICE_COMBINED
+
+	PS2_ENABLE = yes
+	PS2_DRIVER = vendor
+	POINTING_DEVICE_DRIVER = ps2
+
+	MSG_POINTING_DEVICE = trackpoint (left), trackpoint (right)
 	MASTER_SIDE = right
 endif
 
