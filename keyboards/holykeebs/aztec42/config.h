@@ -4,6 +4,9 @@
 #pragma once
 #define AZOTEQ_IQS5XX_TPS65
 #define AZOTEQ_IQS5XX_ROTATION_270
+#define I2C_DRIVER I2CD0
+#define I2C1_SCL_PIN GP1
+#define I2C1_SDA_PIN GP0
 
 #define SPI_DRIVER SPID0
 #define SPI_SCK_PIN GP2
