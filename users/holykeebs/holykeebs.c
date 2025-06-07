@@ -63,7 +63,7 @@ static void serialize_state_to_eeconfig(hk_eeprom_config_t* config) {
 
 static void write_eeconfig(void) {
     serialize_state_to_eeconfig(&hk_eeprom_config);
-    eeconfig_update_user_datablock(&hk_eeprom_config);
+    eeconfig_update_user_datablock(&hk_eeprom_config, 0, sizeof(hk_eeprom_config_t));
 
     printf("write_eeconfig: eeprom data written\n");
 }
@@ -656,7 +656,7 @@ void keyboard_post_init_user(void) {
     }
 
     memset(&hk_eeprom_config, 0, sizeof(hk_eeprom_config_t));
-    eeconfig_read_user_datablock(&hk_eeprom_config);
+    eeconfig_read_user_datablock(&hk_eeprom_config, 0, sizeof(hk_eeprom_config_t));
     printf("keyboard_post_init_user: reading eeprom, check: %u\n", hk_eeprom_config.check);
     if (!eeconfig_is_user_datablock_valid() || !hk_eeprom_config.check) {
         printf("keyboard_post_init_user: eeprom data not found, initializing\n");
@@ -680,7 +680,7 @@ void                       eeconfig_init_user(void) {
     serialize_state_to_eeconfig(&hk_eeprom_config);
 
     eeconfig_init_keymap();
-    eeconfig_update_user_datablock(&hk_eeprom_config);
+    eeconfig_update_user_datablock(&hk_eeprom_config, 0, sizeof(hk_eeprom_config_t));
 
     printf("eeconfig_init_user: eeprom data written\n");
 }
