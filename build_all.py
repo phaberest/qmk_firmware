@@ -148,18 +148,24 @@ def main() -> int:
         command.prepend_argument('USER_NAME=holykeebs')
         commands.append(command)
 
-    os.makedirs('build_all/debug', exist_ok=True)
-    os.makedirs('build_all/previous', exist_ok=True)
-    commands_file = open('build_all/commands.txt', 'w')
+    base_dir = 'build_all_next'
+    build_debug = False
+    os.makedirs(f'{base_dir}/debug', exist_ok=True)
+    os.makedirs(f'{base_dir}/previous', exist_ok=True)
+    commands_file = open(f'{base_dir}/commands.txt', 'w')
     for command in commands:
+        if command.file_name().startswith('debug') and not build_debug:
+            print(f'Skipping {command.file_name()} as build_debug is False')
+            continue
+
         if command.file_name().startswith('debug'):
-            destination = f'build_all/debug/{command.file_name()}.uf2'
+            destination = f'{base_dir}/debug/{command.file_name()}.uf2'
         else:
-            destination = f'build_all/{command.file_name()}.uf2'
+            destination = f'{base_dir}/{command.file_name()}.uf2'
 
         if os.path.exists(destination):
             print(f'File {destination} already exists, moving to previous')
-            os.rename(destination, f'build_all/previous/{command.file_name()}.uf2')
+            os.rename(destination, f'{base_dir}/previous/{command.file_name()}.uf2')
 
         command.add_argument_raw('-j20')
         command.prepend_argument(f'TARGET={command.file_name()}')
