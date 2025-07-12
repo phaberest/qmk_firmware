@@ -10,6 +10,7 @@ typedef union PACKED {
         struct {
             hk_cursor_mode main_cursor_mode : 2;
             bool main_drag_scroll : 1;
+            bool main_scroll_direction_inverted : 1;
             hk_scroll_lock main_scroll_lock : 2;
             int16_t main_default_multiplier;
             int16_t main_sniping_multiplier;
@@ -17,6 +18,7 @@ typedef union PACKED {
 
             hk_cursor_mode peripheral_cursor_mode : 2;
             bool peripheral_drag_scroll : 1;
+            bool peripheral_scroll_direction_inverted : 1;
             hk_scroll_lock peripheral_scroll_lock : 2;
             int16_t peripheral_default_multiplier;
             int16_t peripheral_sniping_multiplier;
@@ -24,6 +26,7 @@ typedef union PACKED {
         } pointing;
 
         bool check       : 1;
+        uint8_t version;
     };
 } hk_eeprom_config_t;
 

@@ -33,6 +33,7 @@ static void deserialize_eeconfig_to_state(const hk_eeprom_config_t* config) {
     g_hk_state.main.cursor_mode = config->pointing.main_cursor_mode;
     g_hk_state.main.drag_scroll = config->pointing.main_drag_scroll;
     g_hk_state.main.scroll_lock = config->pointing.main_scroll_lock;
+    g_hk_state.main.scroll_direction_inverted = config->pointing.main_scroll_direction_inverted;
     g_hk_state.main.pointer_default_multiplier = config->pointing.main_default_multiplier / 100.0;
     g_hk_state.main.pointer_sniping_multiplier = config->pointing.main_sniping_multiplier / 100.0;
     g_hk_state.main.pointer_scroll_buffer_size = config->pointing.main_scroll_buffer_size;
@@ -40,6 +41,7 @@ static void deserialize_eeconfig_to_state(const hk_eeprom_config_t* config) {
     g_hk_state.peripheral.cursor_mode = config->pointing.peripheral_cursor_mode;
     g_hk_state.peripheral.drag_scroll = config->pointing.peripheral_drag_scroll;
     g_hk_state.peripheral.scroll_lock = config->pointing.peripheral_scroll_lock;
+    g_hk_state.peripheral.scroll_direction_inverted = config->pointing.peripheral_scroll_direction_inverted;
     g_hk_state.peripheral.pointer_default_multiplier = config->pointing.peripheral_default_multiplier / 100.0;
     g_hk_state.peripheral.pointer_sniping_multiplier = config->pointing.peripheral_sniping_multiplier / 100.0;
     g_hk_state.peripheral.pointer_scroll_buffer_size = config->pointing.peripheral_scroll_buffer_size;
@@ -49,6 +51,7 @@ static void serialize_state_to_eeconfig(hk_eeprom_config_t* config) {
     config->pointing.main_cursor_mode = g_hk_state.main.cursor_mode;
     config->pointing.main_drag_scroll = g_hk_state.main.drag_scroll;
     config->pointing.main_scroll_lock = g_hk_state.main.scroll_lock;
+    config->pointing.main_scroll_direction_inverted = g_hk_state.main.scroll_direction_inverted;
     config->pointing.main_default_multiplier = (int16_t)(g_hk_state.main.pointer_default_multiplier * 100);
     config->pointing.main_sniping_multiplier = (int16_t)(g_hk_state.main.pointer_sniping_multiplier * 100);
     config->pointing.main_scroll_buffer_size = g_hk_state.main.pointer_scroll_buffer_size;
@@ -56,6 +59,7 @@ static void serialize_state_to_eeconfig(hk_eeprom_config_t* config) {
     config->pointing.peripheral_cursor_mode = g_hk_state.peripheral.cursor_mode;
     config->pointing.peripheral_drag_scroll = g_hk_state.peripheral.drag_scroll;
     config->pointing.peripheral_scroll_lock = g_hk_state.peripheral.scroll_lock;
+    config->pointing.peripheral_scroll_direction_inverted = g_hk_state.peripheral.scroll_direction_inverted;
     config->pointing.peripheral_default_multiplier = (int16_t)(g_hk_state.peripheral.pointer_default_multiplier * 100);
     config->pointing.peripheral_sniping_multiplier = (int16_t)(g_hk_state.peripheral.pointer_sniping_multiplier * 100);
     config->pointing.peripheral_scroll_buffer_size = g_hk_state.peripheral.pointer_scroll_buffer_size;
@@ -105,6 +109,7 @@ static hk_state_t init_state(void) {
             .cursor_mode = CURSOR_MODE_DEFAULT,
             .drag_scroll = false,
             .scroll_lock = SCROLL_LOCK_OFF,
+            .scroll_direction_inverted = false,
             .pointer_default_multiplier = 0,
             .pointer_sniping_multiplier = 0,
             .pointer_scroll_buffer_size = 0,
@@ -114,6 +119,7 @@ static hk_state_t init_state(void) {
             .cursor_mode = CURSOR_MODE_DEFAULT,
             .drag_scroll = false,
             .scroll_lock = SCROLL_LOCK_OFF,
+            .scroll_direction_inverted = false,
             .pointer_default_multiplier = 0,
             .pointer_sniping_multiplier = 0,
             .pointer_scroll_buffer_size = 0,
@@ -259,6 +265,11 @@ void hk_process_scroll(const hk_pointer_state_t* pointer_state, report_mouse_t* 
         mouse_report->y = 0;
     }
 
+    if (pointer_state->scroll_direction_inverted) {
+        mouse_report->h = -mouse_report->h;
+        mouse_report->v = -mouse_report->v;
+    }
+
     if (pointer_state->pointer_scroll_buffer_size > 0) {
         static int16_t scroll_buffer_h = 0;
         static int16_t scroll_buffer_v = 0;
@@ -268,18 +279,28 @@ void hk_process_scroll(const hk_pointer_state_t* pointer_state, report_mouse_t* 
         mouse_report->h = 0;
         mouse_report->v = 0;
 
-        bool output_horizontal = pointer_state->scroll_lock == SCROLL_LOCK_HORIZONTAL || pointer_state->scroll_lock == SCROLL_LOCK_OFF;
-        bool output_vertical = pointer_state->scroll_lock == SCROLL_LOCK_VERTICAL || pointer_state->scroll_lock == SCROLL_LOCK_OFF;
+    if (abs(scroll_buffer_h) > pointer_state->pointer_scroll_buffer_size) {
+        mouse_report->h = scroll_buffer_h > 0 ? 1 : -1;
+        scroll_buffer_h = 0;
+    }
 
-        if (output_horizontal && abs(scroll_buffer_h) > pointer_state->pointer_scroll_buffer_size) {
-            mouse_report->h = scroll_buffer_h > 0 ? 1 : -1;
-            scroll_buffer_h = 0;
-        }
+    if (abs(scroll_buffer_v) > pointer_state->pointer_scroll_buffer_size) {
+        mouse_report->v = scroll_buffer_v > 0 ? 1 : -1;
+        scroll_buffer_v = 0;
+    }
+    }
 
-        if (output_vertical && abs(scroll_buffer_v) > pointer_state->pointer_scroll_buffer_size) {
-            mouse_report->v = scroll_buffer_v > 0 ? 1 : -1;
-            scroll_buffer_v = 0;
-        }
+    mouse_hv_report_t h = mouse_report->h;
+    mouse_hv_report_t v = mouse_report->v;
+    mouse_report->h = 0;
+    mouse_report->v = 0;
+
+    if (pointer_state->scroll_lock == SCROLL_LOCK_HORIZONTAL || pointer_state->scroll_lock == SCROLL_LOCK_OFF) {
+        mouse_report->h = h;
+    }
+
+    if (pointer_state->scroll_lock == SCROLL_LOCK_VERTICAL || pointer_state->scroll_lock == SCROLL_LOCK_OFF) {
+        mouse_report->v = v;
     }
 }
 
@@ -376,6 +397,12 @@ static void hk_cycle_scroll_mode(bool side_peripheral) {
         new_mode = SCROLL_LOCK_OFF;
     }
     state->scroll_lock = new_mode;
+    g_hk_state.dirty = true;
+}
+
+static void hk_invert_scroll_direction(bool side_peripheral) {
+    hk_pointer_state_t* state = side_peripheral ? &g_hk_state.peripheral : &g_hk_state.main;
+    state->scroll_direction_inverted = !state->scroll_direction_inverted;
     g_hk_state.dirty = true;
 }
 
@@ -587,6 +614,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
                 state_changed = true;
             }
             break;
+        case HK_INVERT_SCROLL_DIRECTION:
+            if (record->event.pressed) {
+                hk_invert_scroll_direction(/*side_peripheral=*/has_shift_mod());
+                state_changed = true;
+            }
+            break;
+
     }
     if (state_changed) {
         debug_hk_state_to_console(&g_hk_state);
@@ -657,8 +691,14 @@ void keyboard_post_init_user(void) {
 
     memset(&hk_eeprom_config, 0, sizeof(hk_eeprom_config_t));
     eeconfig_read_user_datablock(&hk_eeprom_config, 0, sizeof(hk_eeprom_config_t));
-    printf("keyboard_post_init_user: reading eeprom, check: %u\n", hk_eeprom_config.check);
-    if (!eeconfig_is_user_datablock_valid() || !hk_eeprom_config.check) {
+    printf("keyboard_post_init_user: reading eeprom, check: %u, version: %u\n", hk_eeprom_config.check, hk_eeprom_config.version);
+    if (!eeconfig_is_user_datablock_valid() || !hk_eeprom_config.check || hk_eeprom_config.version < 100) {
+        // Before version 100, the eeprom config didn't have a version. Reset it.
+        if (hk_eeprom_config.version < 100) {
+            printf("keyboard_post_init_user: eeprom version not found (%u), resetting to defaults\n", hk_eeprom_config.version);
+        } else if (!hk_eeprom_config.check) {
+            printf("keyboard_post_init_user: eeprom check failed, resetting to defaults\n");
+        }
         printf("keyboard_post_init_user: eeprom data not found, initializing\n");
         eeconfig_init_user();
     } else {
@@ -677,6 +717,7 @@ void                       eeconfig_init_user(void) {
 
     memset(&hk_eeprom_config, 0, sizeof(hk_eeprom_config_t));
     hk_eeprom_config.check = true;
+    hk_eeprom_config.version = 100; // Increment this when changing the eeprom config structure.
     serialize_state_to_eeconfig(&hk_eeprom_config);
 
     eeconfig_init_keymap();

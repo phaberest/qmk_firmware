@@ -29,6 +29,7 @@ typedef struct PACKED {
     hk_cursor_mode cursor_mode : 2;
     hk_scroll_lock scroll_lock : 2;
     bool drag_scroll : 1;
+    bool scroll_direction_inverted : 1;
     float pointer_default_multiplier;
     float pointer_sniping_multiplier;
     uint8_t pointer_scroll_buffer_size;

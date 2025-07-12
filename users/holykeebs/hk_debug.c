@@ -67,6 +67,7 @@ void debug_hk_state_to_console(hk_state_t* state) {
                 "\t\tcursor_mode=%s\n"
                 "\t\tdrag_scroll=%u\n"
                 "\t\tscroll_lock=%s\n"
+                "\t\tscroll_direction_inverted=%u\n"
                 "\t\tpointer_default_multiplier=%.2f\n"
                 "\t\tpointer_sniping_multiplier=%.2f\n"
                 "\t\tpointer_scroll_buffer_size=%u\n"
@@ -77,15 +78,16 @@ void debug_hk_state_to_console(hk_state_t* state) {
                 "\t\tcursor_mode=%s\n"
                 "\t\tdrag_scroll=%u\n"
                 "\t\tscroll_lock=%s\n"
+                "\t\tscroll_direction_inverted=%u\n"
                 "\t\tpointer_default_multiplier=%.2f\n"
                 "\t\tpointer_sniping_multiplier=%.2f\n"
                 "\t\tpointer_scroll_buffer_size=%u\n"
                 "\t}\n"
                 "}\n",
                 state->is_main_side, state->setting_default_scale, state->setting_sniping_scale, state->setting_scroll_buffer,
-                hk_pointer_kind_to_string(state->main.pointer_kind), hk_cursor_mode_to_string(state->main.cursor_mode), state->main.drag_scroll, hk_scroll_mode_to_string(state->main.scroll_lock),
+                hk_pointer_kind_to_string(state->main.pointer_kind), hk_cursor_mode_to_string(state->main.cursor_mode), state->main.drag_scroll, hk_scroll_mode_to_string(state->main.scroll_lock), state->main.scroll_direction_inverted,
                 state->main.pointer_default_multiplier, state->main.pointer_sniping_multiplier, state->main.pointer_scroll_buffer_size,
-                hk_pointer_kind_to_string(state->peripheral.pointer_kind), hk_cursor_mode_to_string(state->peripheral.cursor_mode), state->peripheral.drag_scroll, hk_scroll_mode_to_string(state->peripheral.scroll_lock),
+                hk_pointer_kind_to_string(state->peripheral.pointer_kind), hk_cursor_mode_to_string(state->peripheral.cursor_mode), state->peripheral.drag_scroll, hk_scroll_mode_to_string(state->peripheral.scroll_lock), state->peripheral.scroll_direction_inverted,
                 state->peripheral.pointer_default_multiplier, state->peripheral.pointer_sniping_multiplier, state->peripheral.pointer_scroll_buffer_size
         );
     #    endif // CONSOLE_ENABLE

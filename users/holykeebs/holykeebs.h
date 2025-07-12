@@ -43,6 +43,9 @@ enum hk_keycodes {
     // Scroll lock filters out any scroll movement that is not in the specified direction. This cycles through the
     // possible modes: off, horizontal, vertical.
     HK_CYCLE_SCROLL_LOCK, // 0x7E0A
+
+    // Inverts the scroll direction.
+    HK_INVERT_SCROLL_DIRECTION, // 0x7E0B
 };
 
 #define HK_SAVE      HK_SAVE_SETTINGS
@@ -56,6 +59,7 @@ enum hk_keycodes {
 #define HK_D_MODE    HK_DRAGSCROLL_MODE
 #define HK_D_MODE_T  HK_DRAGSCROLL_MODE_TOGGLE
 #define HK_C_SCROLL  HK_CYCLE_SCROLL_LOCK
+#define HK_I_SCROLL  HK_INVERT_SCROLL_DIRECTION
 
 // #define ENABLE_DRIFT_DETECTION
 // #define ENABLE_PIMORONI_ADAPTIVE_MOTION
