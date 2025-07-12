@@ -83,7 +83,7 @@ class Command:
 
 def build_commands():
     commands = []
-    skip_pointing_devices =[('trackpoint', 'trackpoint'), ('cirque35', 'cirque40'), ('cirque40', 'cirque35')]
+    skip_pointing_devices =[('cirque35', 'cirque40'), ('cirque40', 'cirque35')]
     for console_enabled in [True, False]:
         for kb in ['crkbd/rev1', 'holykeebs/spankbd', 'lily58/rev1', 'holykeebs/sweeq']:
             for left_pointing_device in ['trackpoint', 'trackball', 'cirque35', 'cirque40', 'tps43', '']:
@@ -148,8 +148,8 @@ def main() -> int:
         command.prepend_argument('USER_NAME=holykeebs')
         commands.append(command)
 
-    base_dir = 'build_all_next'
-    build_debug = False
+    base_dir = 'build_all'
+    build_debug = True
     os.makedirs(f'{base_dir}/debug', exist_ok=True)
     os.makedirs(f'{base_dir}/previous', exist_ok=True)
     commands_file = open(f'{base_dir}/commands.txt', 'w')
