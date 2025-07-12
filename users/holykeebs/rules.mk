@@ -1,4 +1,4 @@
-VALID_POINTING_DEVICE_CONFIGURATIONS := trackball tps43 cirque40 cirque35 tps43_tps43 cirque35_cirque35 cirque40_cirque40 trackball_trackball trackball_tps43 tps43_trackball trackball_cirque35 cirque35_trackball trackball_cirque40 cirque40_trackball trackpoint trackpoint_tps43 tps43_trackpoint trackpoint_trackball trackball_trackpoint trackpoint_cirque35 cirque35_trackpoint trackpoint_cirque40 cirque40_trackpoint cirque40_tps43 tps43_cirque40 cirque35_tps43 tps43_cirque35 trackpoint_trackpoint
+VALID_POINTING_DEVICE_CONFIGURATIONS := trackball tps43 cirque40 cirque35 tps43_tps43 cirque35_cirque35 cirque40_cirque40 trackball_trackball trackball_tps43 tps43_trackball trackball_cirque35 cirque35_trackball trackball_cirque40 cirque40_trackball trackpoint trackpoint_tps43 tps43_trackpoint trackpoint_trackball trackball_trackpoint trackpoint_cirque35 cirque35_trackpoint trackpoint_cirque40 cirque40_trackpoint cirque40_tps43 tps43_cirque40 cirque35_tps43 tps43_cirque35 trackpoint_trackpoint tps65
 ifdef POINTING_DEVICE
     ifeq ($(filter $(POINTING_DEVICE),$(VALID_POINTING_DEVICE_CONFIGURATIONS)),)
         $(call CATASTROPHIC_ERROR,Invalid POINTING_DEVICE,POINTING_DEVICE="$(POINTING_DEVICE)" is not a valid pointing device configuration)
@@ -9,10 +9,16 @@ ifeq ($(strip $(CONSOLE)), yes)
 	CONSOLE_ENABLE = yes
 endif
 
+# Add SERIAL_DRIVER if the current keyboard is a split keyboard.
+SPLITS := crkbd/rev1 lily58/rev1 holykeebs/sweeq holykeebs/spankbd keyball/keyball39 keyball/keyball44 keyball/keyball61
+ifeq ($(filter $(KEYBOARD),$(SPLITS)),)
+	SERIAL_DRIVER = vendor
+endif
+
+
 TRI_LAYER_ENABLE = yes
 EXTRAKEY_ENABLE = yes
 MOUSEKEY_ENABLE = yes
-SERIAL_DRIVER = vendor
 
 ifdef POINTING_DEVICE
 	SRC += $(USER_PATH)/holykeebs.c $(USER_PATH)/hk_debug.c $(USER_PATH)/rpc.c $(USER_PATH)/pimoroni.c $(USER_PATH)/trackpoint.c
@@ -39,7 +45,7 @@ else ifeq ($(strip $(POINTING_DEVICE_POSITION)), thumb_outer)
 	MASTER_SIDE = right
 else ifeq ($(strip $(POINTING_DEVICE_POSITION)), middle)
 	OPT_DEFS += -DPOINTING_DEVICE_POSITION_MIDDLE
-	MASTER_SIDE = n/a (not a split keyboard)
+	MASTER_SIDE = middle
 endif
 
 ifeq ($(strip $(POINTING_DEVICE)), trackball)
@@ -93,7 +99,17 @@ ifeq ($(strip $(POINTING_DEVICE)), tps43)
 	POINTING_DEVICE_DRIVER = azoteq_iqs5xx
 
 	MSG_POINTING_DEVICE = TPS43 touchpad
+endif
 
+ifeq ($(strip $(POINTING_DEVICE)), tps65)
+	ifeq ($(strip $(POINTING_DEVICE_POSITION)), middle)
+		OPT_DEFS += -DHK_POINTING_DEVICE_MIDDLE_TPS65
+	endif
+
+	POINTING_DEVICE_ENABLE = yes
+	POINTING_DEVICE_DRIVER = azoteq_iqs5xx
+
+	MSG_POINTING_DEVICE = TPS65 touchpad
 endif
 
 ifeq ($(strip $(POINTING_DEVICE)), trackpoint)

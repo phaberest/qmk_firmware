@@ -19,15 +19,15 @@
 #undef EE_HANDS
 #undef MASTER_RIGHT
 
-#if defined(HK_MASTER_LEFT)
-    #define MASTER_LEFT
-#elif defined(HK_MASTER_RIGHT)
-    #define MASTER_RIGHT
-#else
-    #error "HK_MASTER_LEFT or HK_MASTER_RIGHT not defined in rules.mk"
-#endif
-
 #ifdef SPLIT_KEYBOARD
+    #if defined(HK_MASTER_LEFT)
+        #define MASTER_LEFT
+    #elif defined(HK_MASTER_RIGHT)
+        #define MASTER_RIGHT
+    #else
+        #error "HK_MASTER_LEFT or HK_MASTER_RIGHT not defined in rules.mk"
+    #endif
+
     #define SERIAL_USART_TX_PIN GP1
 
     // This helps in setups where the keyboard isn't recognized on boot if it's already plugged in.
@@ -98,6 +98,11 @@
 #ifdef POINTING_DEVICE_DRIVER_azoteq_iqs5xx
     #if defined(HK_POINTING_DEVICE_RIGHT_TPS43) || defined(HK_POINTING_DEVICE_LEFT_TPS43)
         #define AZOTEQ_IQS5XX_TPS43
+    #endif
+
+    #if defined(HK_POINTING_DEVICE_MIDDLE_TPS65)
+        #define AZOTEQ_IQS5XX_TPS65
+        #define AZOTEQ_IQS5XX_ROTATION_270
     #endif
 
     #if defined(HK_POINTING_DEVICE_RIGHT_TPS43)
