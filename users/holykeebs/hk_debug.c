@@ -40,6 +40,8 @@ const char* hk_pointer_kind_to_string(hk_pointer_kind kind) {
             return "cirque40";
         case POINTER_KIND_TPS43:
             return "tps43";
+        case POINTER_KIND_TPS65:
+            return "tps65";
         default:
             return "unknown";
     }

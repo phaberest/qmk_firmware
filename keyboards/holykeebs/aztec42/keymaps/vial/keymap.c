@@ -1,16 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include QMK_KEYBOARD_H
-#include "qp.h"
-#include "qp_comms.h"
-#include "qp_st7735.h"
-#include "qp_st77xx_opcodes.h"
-#include "color.h"
-#include "qp_lvgl.h"
+
+#include "lcd.h"
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [0] = LAYOUT_split_3x6_3(
-         KC_TAB,     KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P, KC_BSPC,
+         KC_TAB,     KC_Q,    KC_W,    KC_E,    KC_R,    BL_TOGG,                         QK_BOOTLOADER,    KC_U,    KC_I,    KC_O,    KC_P, KC_BSPC,
          KC_LCTL,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, KC_QUOT,
          KC_LSFT,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH, KC_RSFT,
                                              KC_LGUI,    MO(1), KC_SPC,     KC_ENT,   MO(2),  KC_RALT
@@ -37,34 +33,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-painter_device_t display;
-
 void keyboard_post_init_kb(void) {
-    wait_ms(LCD_WAIT_TIME);
-
-    // Initialise the LCD
-    display = qp_st7735_make_spi_device(LCD_HEIGHT, LCD_WIDTH, LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN, LCD_SPI_DIVISOR, 0);
-    if (!qp_init(display, QP_ROTATION_270) || !qp_power(display, true) || !qp_lvgl_attach(display)) return;
-
-    #ifdef LCD_INVERT_COLOUR
-    qp_comms_start(display);
-    qp_comms_command(display, ST77XX_CMD_INVERT_ON);
-    qp_comms_stop(display);
-    #endif
-
-    // qp_rect(display, 0, 0, LCD_WIDTH, LCD_HEIGHT, 0, 0, 0, true);
-    // qp_flush(display);
-
-    // qp_circle(display, LCD_WIDTH/2, LCD_HEIGHT/2, 10, 0, 0, 0, true);
-    // qp_flush(display);
-    lv_obj_t * slider = lv_slider_create(lv_scr_act());
-    lv_obj_set_width(slider, 120);                          /*Set the width*/
-    lv_obj_center(slider);                                  /*Align to the center of the parent (screen)*/
-
-    /*Create a label below the slider*/
-    lv_obj_t * label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "0");
-    lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);
-
     keyboard_post_init_user();
+
+    if (!lcd_init()) return;
+    lcd_draw();
 }

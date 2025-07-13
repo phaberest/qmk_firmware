@@ -15,7 +15,6 @@ ifeq ($(filter $(KEYBOARD),$(SPLITS)),)
 	SERIAL_DRIVER = vendor
 endif
 
-
 TRI_LAYER_ENABLE = yes
 EXTRAKEY_ENABLE = yes
 MOUSEKEY_ENABLE = yes

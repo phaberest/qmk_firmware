@@ -11,6 +11,7 @@ typedef enum {
     POINTER_KIND_CIRQUE35,
     POINTER_KIND_CIRQUE40,
     POINTER_KIND_TPS43,
+    POINTER_KIND_TPS65,
 } hk_pointer_kind;
 
 typedef enum {

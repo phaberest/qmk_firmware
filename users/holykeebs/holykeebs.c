@@ -72,6 +72,12 @@ static void write_eeconfig(void) {
     printf("write_eeconfig: eeprom data written\n");
 }
 
+static void hk_configure_tps65_common(hk_pointer_state_t* state) {
+    state->pointer_default_multiplier = 1.25;
+    state->pointer_sniping_multiplier = 1.0;
+    state->pointer_scroll_buffer_size = 5;
+}
+
 static void hk_configure_tps43_common(hk_pointer_state_t* state) {
     state->pointer_default_multiplier = 1.25;
     state->pointer_sniping_multiplier = 1.0;
@@ -136,6 +142,10 @@ static hk_state_t init_state(void) {
         return state;
     }
 
+    #if defined(HK_POINTING_DEVICE_MIDDLE_TPS65)
+        state.main.pointer_kind = POINTER_KIND_TPS65;
+    #endif
+
     #ifdef HK_POINTING_DEVICE_RIGHT_PIMORONI
         state.main.pointer_kind = POINTER_KIND_PIMORONI_TRACKBALL;
     #elif defined(HK_POINTING_DEVICE_RIGHT_TRACKPOINT)
@@ -160,7 +170,9 @@ static hk_state_t init_state(void) {
         state.peripheral.pointer_kind = POINTER_KIND_TPS43;
     #endif
 
-    if (is_keyboard_left()) {
+    // TPS65 is only supported for unibody keyboards, so check that to know if we have a split keyboard.
+    if (state.main.pointer_kind != POINTER_KIND_TPS65 && is_keyboard_left()) {
+        printf("init_state: left hand, swapping main and peripheral pointers\n");
         hk_pointer_kind temp = state.main.pointer_kind;
         state.main.pointer_kind = state.peripheral.pointer_kind;
         state.peripheral.pointer_kind = temp;
@@ -176,6 +188,9 @@ static hk_state_t init_state(void) {
             break;
         case POINTER_KIND_TPS43:
             hk_configure_tps43_common(&state.main);
+            break;
+        case POINTER_KIND_TPS65:
+            hk_configure_tps65_common(&state.main);
             break;
         case POINTER_KIND_PIMORONI_TRACKBALL:
             hk_configure_pimoroni_common(&state.main);
@@ -354,6 +369,7 @@ static float hk_pointer_scale_step(const hk_pointer_state_t* state) {
         case POINTER_KIND_CIRQUE40:
             return .1;
         case POINTER_KIND_TPS43:
+        case POINTER_KIND_TPS65:
             return .1;
         default:
             // Should never happen
