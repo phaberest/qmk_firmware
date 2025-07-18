@@ -9,9 +9,7 @@ ifeq ($(strip $(CONSOLE)), yes)
 	CONSOLE_ENABLE = yes
 endif
 
-# Add SERIAL_DRIVER if the current keyboard is a split keyboard.
-SPLITS := crkbd/rev1 lily58/rev1 holykeebs/sweeq holykeebs/spankbd keyball/keyball39 keyball/keyball44 keyball/keyball61
-ifeq ($(filter $(KEYBOARD),$(SPLITS)),)
+ifeq ($(strip $(SPLIT_KEYBOARD)), yes)
 	SERIAL_DRIVER = vendor
 endif
 
