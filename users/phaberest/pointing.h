@@ -36,15 +36,10 @@ typedef struct PACKED {
     uint8_t pointer_scroll_buffer_size;
 } hk_pointer_state_t;
 
-#define HK_OLED_MAX_PRESSING_KEYCODES 6
-
 typedef struct PACKED {
     uint16_t       last_kc;
     keypos_t       last_pos;
     report_mouse_t last_mouse;
-
-    // Buffer to indicate pressing keys.
-    char pressing_keys[HK_OLED_MAX_PRESSING_KEYCODES + 1];
 } hk_display_state_t;
 
 typedef struct PACKED {

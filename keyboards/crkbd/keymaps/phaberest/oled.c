@@ -239,7 +239,7 @@ void oled_render_layer_state(void) {
 //     /* KEYBOARD PET RENDER END */
 // }
 
-oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_270; }
+oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
 
 bool oled_task_user(void) {
     if (layer_state_is(_MOUSE)) {

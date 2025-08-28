@@ -1,5 +1,5 @@
 #include QMK_KEYBOARD_H
-#include "users/holykeebs/holykeebs.h"
+#include "users/phaberest/holykeebs.h"
 
 #define XXXXXXX KC_NO
 

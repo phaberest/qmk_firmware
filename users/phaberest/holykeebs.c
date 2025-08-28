@@ -24,8 +24,6 @@
 #define CONSTRAIN_XY(val)      (mouse_xy_report_t) _CONSTRAIN(val, MOUSE_REPORT_XY_MIN, MOUSE_REPORT_XY_MAX)
 #define CONSTRAIN_HV(val)      (mouse_hv_report_t) _CONSTRAIN(val, MOUSE_REPORT_HV_MIN, MOUSE_REPORT_HV_MAX)
 
-static const char BL = '\xB0'; // Blank indicator character
-
 hk_state_t g_hk_state = {0};
 hk_eeprom_config_t hk_eeprom_config;
 
@@ -134,7 +132,6 @@ static hk_state_t init_state(void) {
             .last_kc = KC_NO,
             .last_pos = {0, 0},
             .last_mouse = {0, 0, 0, 0, 0},
-            .pressing_keys = { BL, BL, BL, BL, BL, BL, 0 },
         },
     };
 
@@ -505,37 +502,7 @@ report_mouse_t pointing_device_task_combined_user(report_mouse_t left_report, re
 }
 #endif
 
-// clang-format off
-const char PROGMEM code_to_name[] = {
-    'a', 'b', 'c', 'd', 'e', 'f',  'g', 'h', 'i',  'j',
-    'k', 'l', 'm', 'n', 'o', 'p',  'q', 'r', 's',  't',
-    'u', 'v', 'w', 'x', 'y', 'z',  '1', '2', '3',  '4',
-    '5', '6', '7', '8', '9', '0',  'R', 'E', 'B',  'T',
-    '_', '-', '=', '[', ']', '\\', '#', ';', '\'', '`',
-    ',', '.', '/',
-};
-// clang-format on
-
-static void pressing_keys_update(uint16_t keycode, keyrecord_t *record) {
-    // Process only valid keycodes.
-    if (keycode >= 4 && keycode < 57) {
-        char value = pgm_read_byte(code_to_name + keycode - 4);
-        char where = BL;
-        if (!record->event.pressed) {
-            // Swap `value` and `where` when releasing.
-            where = value;
-            value = BL;
-        }
-        // Rewrite the last `where` of pressing_keys to `value` .
-        for (int i = 0; i < HK_OLED_MAX_PRESSING_KEYCODES; i++) {
-            if (g_hk_state.display.pressing_keys[i] == where) {
-                g_hk_state.display.pressing_keys[i] = value;
-                break;
-            }
-        }
-    }
-    g_hk_state.dirty = true;
-}
+// Removed OLED pressing-keys helper
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     if (!g_hk_state.is_main_side) {
@@ -545,7 +512,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     g_hk_state.dirty = true;
     g_hk_state.display.last_kc = keycode;
     g_hk_state.display.last_pos = record->event.key;
-    pressing_keys_update(keycode, record);
 
     if (!process_record_keymap(keycode, record)) {
         return false;

@@ -152,7 +152,7 @@ void render_mod_status_gui_alt(uint8_t modifiers) {
         oled_write_P(gui_off_2, false);
     }
 
-    if (modifiers & MOD_MASK_GUI & MOD_MASK_ALT) {
+    if ((modifiers & MOD_MASK_GUI) && (modifiers & MOD_MASK_ALT)) {
         oled_write_P(on_on_2, false);
     } else if (modifiers & MOD_MASK_GUI) {
         oled_write_P(on_off_2, false);
