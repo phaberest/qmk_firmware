@@ -1,0 +1,8 @@
+# EXTRAKEY_ENABLE 	= no
+# VIA_ENABLE          = no
+TAP_DANCE_ENABLE = yes
+OLED_ENABLE = yes
+OLED_DRIVER = SSD1306
+# SPLIT_KEYBOARD 		= yes
+#
+# WPM_ENABLE 			= yes

@@ -133,12 +133,12 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record){
         case KC_PSTRING:
             SEND_STRING(PASS);
             break;
-        case KC_LAYOUT:
+        case KC_LAYOUT: {
             int desired_layout = layout_colemak ? _QWERTY : _COLEMAK;
             set_single_default_layer(desired_layout);
             layout_colemak = !layout_colemak;
             return false;
-            break;
+        }
         case RCTL_T(KC_TABWIN):
             if (record->tap.count) {
                 tap_code16(G(KC_GRV));
