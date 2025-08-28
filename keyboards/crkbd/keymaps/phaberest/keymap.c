@@ -1,16 +1,24 @@
 #include QMK_KEYBOARD_H
 #include "users/phaberest/holykeebs.h"
 
+// Layer definitions
+enum layers {
+    _QWERTY = 0,
+    _NAV,
+    _NUM,
+    _FN,
+    _GAMING,
+    _MOUSE,
+    _COLEMAK
+};
+
 #define XXXXXXX KC_NO
 
-#define HOME_A LGUI_T(KC_A)
-#define HOME_S LALT_T(KC_S)
-#define HOME_D LCTL_T(KC_D)
-#define HOME_F LSFT_T(KC_F)
-#define HOME_J LSFT_T(KC_J)
-#define HOME_K LCTL_T(KC_K)
-#define HOME_L LALT_T(KC_L)
-#define HOME_SCLN LGUI_T(KC_SCLN)
+// Manual auto mouse layer implementation
+static uint32_t mouse_timer = 0;
+static bool mouse_layer_active = false;
+#define MOUSE_LAYER_TIMEOUT 1000  // 1 second timeout
+
 #define KC_SLCK KC_SCROLL_LOCK
 
 #define RALT_X RALT_T(KC_X)
@@ -22,6 +30,7 @@ enum {
 
 enum custom_keycodes {
     RESET_KBD = SAFE_RANGE,
+    TOGGLE_LAYOUT,
 };
 
 tap_dance_action_t tap_dance_actions[] = {
@@ -36,7 +45,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         KC_GRV,     KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                         KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,  KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    TD_ESC_TAB, HOME_A,  HOME_S,  HOME_D,  HOME_F,    KC_G,                         KC_H,  HOME_J,  HOME_K,  HOME_L, HOME_SCLN,KC_QUOT,
+    TD_ESC_TAB,     KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
     MT(MOD_LSFT, KC_TAB), KC_Z, RALT_X, KC_C, KC_V, KC_B,                         KC_N, KC_M, KC_COMM, RALT_DOT, KC_SLSH, MT(MOD_LSFT, KC_ENT),
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -99,13 +108,30 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [5] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RESET_KBD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RESET_KBD, XXXXXXX, XXXXXXX, XXXXXXX, TOGGLE_LAYOUT, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, XXXXXXX,                      XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, XXXXXXX, KC_RALT, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, KC_WH_R, KC_WH_D, KC_WH_U, KC_WH_L, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,    KC_BTN1, KC_BTN3, KC_BTN2
+                                        //`--------------------------'  `--------------------------'
+    ),
+
+    [6] = LAYOUT_split_3x6_3(
+    //,-----------------------------------------------------.                    ,-----------------------------------------------------.
+        KC_GRV,     KC_Q,    KC_W,    KC_F,    KC_P,    KC_G,                         KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN, KC_BSPC,
+    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+    TD_ESC_TAB,     KC_A,    KC_R,    KC_S,    KC_T,    KC_D,                         KC_H,    KC_N,    KC_E,    KC_I,    KC_O,  KC_QUOT,
+    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+    MT(MOD_LSFT, KC_TAB), KC_Z, RALT_X, KC_C, KC_V, KC_B,                         KC_K, KC_M, KC_COMM, RALT_DOT, KC_SLSH, MT(MOD_LSFT, KC_ENT),
+    //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+                                LT(5, KC_TAB),
+                                    LT(1, KC_ENT),
+                                        LT(2, KC_SPC),
+                                                                        MT(MOD_LGUI, KC_SPC) ,
+                                                                            MT(MOD_LALT, KC_ENT),
+                                                                                        MT(MOD_RCTL, KC_BSPC)
                                         //`--------------------------'  `--------------------------'
     ),
 
@@ -133,6 +159,18 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                 soft_reset_keyboard();
             }
             return false;
+        case TOGGLE_LAYOUT:
+            if (record->event.pressed) {
+                // Check current default layer and toggle between QWERTY and COLEMAK
+                if (get_highest_layer(default_layer_state) == _QWERTY) {
+                    // Currently QWERTY, switch to COLEMAK
+                    default_layer_set(1UL << _COLEMAK);
+                } else {
+                    // Currently COLEMAK (or anything else), switch to QWERTY
+                    default_layer_set(1UL << _QWERTY);
+                }
+            }
+            return false;
     }
 
     return true;
@@ -149,4 +187,33 @@ bool wpm_keycode_user(uint16_t keycode) {
     }
 
     return false;
+}
+
+// Check mouse layer timeout regularly
+void matrix_scan_keymap(void) {
+    if (mouse_layer_active && timer_elapsed32(mouse_timer) > MOUSE_LAYER_TIMEOUT) {
+        layer_off(_MOUSE);
+        mouse_layer_active = false;
+    }
+}
+
+// This function is called by the holykeebs user code
+report_mouse_t pointing_device_task_keymap(report_mouse_t mouse_report) {
+    // Check if mouse movement is detected
+    if (mouse_report.x != 0 || mouse_report.y != 0) {
+        // Activate mouse layer and reset timer
+        if (!mouse_layer_active) {
+            layer_on(_MOUSE);
+            mouse_layer_active = true;
+        }
+        mouse_timer = timer_read32();
+    }
+    
+    // Check if we should deactivate the mouse layer due to inactivity
+    if (mouse_layer_active && timer_elapsed32(mouse_timer) > MOUSE_LAYER_TIMEOUT) {
+        layer_off(_MOUSE);
+        mouse_layer_active = false;
+    }
+    
+    return mouse_report;
 }
