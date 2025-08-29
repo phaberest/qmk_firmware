@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
 #include "enums.h"
+#include "users/phaberest/holykeebs.h"
 
 // Type definitions for combo mappings
 typedef struct {
@@ -25,6 +26,11 @@ static uint32_t mouse_timer = 0;
 static bool mouse_layer_active = false;
 #define MOUSE_LAYER_TIMEOUT 1000  // 1 second timeout
 
+// Caps lock toggle state tracking
+static bool left_shift_pressed = false;
+static bool right_shift_pressed = false;
+static bool caps_toggle_triggered = false;
+
 #define KC_SLCK KC_SCROLL_LOCK
 
 #define RALT_X RALT_T(KC_X)
@@ -47,6 +53,12 @@ enum custom_keycodes {
     EMOJI_LAUGH,     // 😂
     EMOJI_HEART,     // ❤️
     SYMBOL_EURO,     // €
+    CAPS_TOGGLE,     // Custom caps lock toggle
+    // Additional symbols for numbers layer
+    SYMBOL_ARROW,    // =>
+    SYMBOL_PERCENT,  // %
+    SYMBOL_CARET,    // ^
+    SYMBOL_DOLLAR,   // $
 };
 
 // Tap dance state for ESC/TAB/FN layer
@@ -203,11 +215,16 @@ bool process_bitwise_f(uint16_t keycode, keyrecord_t *record) {
 // COMBO MAPPING DATA DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Function declarations
+int8_t get_key_position_for_layout(uint16_t keycode, bool is_colemak);
+bool check_and_execute_combo(int8_t key_pos, bool* combo_keys);
+bool process_record_keymap(uint16_t keycode, keyrecord_t *record);
+
 // Physical position mappings (same positions across layouts)
 const combo_key_mapping_t combo_key_mappings[] = {
     // Top row (positions 0-11)
     {KC_Q,    KC_Q,    1},   // Q stays Q
-    {KC_W,    KC_W,    2},   // W stays W  
+    {KC_W,    KC_W,    2},   // W stays W
     {KC_E,    KC_F,    3},   // E -> F
     {KC_R,    KC_P,    4},   // R -> P
     {KC_T,    KC_B,    5},   // T -> B
@@ -217,7 +234,7 @@ const combo_key_mapping_t combo_key_mappings[] = {
     {KC_O,    KC_Y,    9},   // O -> Y
     {KC_P,    KC_SCLN, 10}, // P -> ; (SCLN)
 
-    // Home row (positions 12-23)  
+    // Home row (positions 12-23)
     {KC_A,    KC_A,    13},  // A stays A
     {KC_S,    KC_R,    14},  // S -> R
     {KC_D,    KC_S,    15},  // D -> S
@@ -252,33 +269,32 @@ const combo_definition_t combo_definitions[] = {
     // Parentheses
     {15, 16, KC_9,    MOD_BIT(KC_LSFT), "Left parenthesis ("},   // D,F positions -> S,T in Colemak
     {19, 20, KC_0,    MOD_BIT(KC_LSFT), "Right parenthesis )"},  // J,K positions -> N,E in Colemak
-    
+
     // Brackets
     {3,  4,  KC_LBRC, 0,                "Left bracket ["},       // E,R positions -> F,P in Colemak
     {7,  8,  KC_RBRC, 0,                "Right bracket ]"},      // U,I positions -> L,U in Colemak
-    
+
     // Braces
     {27, 28, KC_LBRC, MOD_BIT(KC_LSFT), "Left brace {"},         // C,V positions -> C,D in Colemak
     {31, 32, KC_RBRC, MOD_BIT(KC_LSFT), "Right brace }"},        // M,COMM positions -> H,COMM in Colemak
-    
+
     // Comparison operators
     {2,  3,  KC_COMM, MOD_BIT(KC_LSFT), "Less than <"},          // W,E positions -> W,F in Colemak
     {8,  9,  KC_DOT,  MOD_BIT(KC_LSFT), "Greater than >"},       // I,O positions -> U,Y in Colemak
-    
+
     // Special characters
     {13, 14, KC_GRV,  MOD_BIT(KC_LSFT), "Tilde ~"},              // A,S positions -> A,R in Colemak
     {14, 15, KC_GRV,  0,                "Grave `"},               // S,D positions -> R,S in Colemak
-    
+
     // Math operators
     {4,  7,  KC_EQL,  MOD_BIT(KC_LSFT), "Plus +"},               // R,U positions -> P,L in Colemak
     {28, 31, KC_MINS, 0,                "Minus -"},               // V,M positions -> D,H in Colemak
     {16, 19, KC_EQL,  0,                "Equal ="},               // F,J positions -> T,N in Colemak
     {3,  8,  KC_8,    MOD_BIT(KC_LSFT), "Asterisk *"},           // E,I positions -> F,U in Colemak
-    {29, 30, KC_MINS, MOD_BIT(KC_LSFT), "Underscore _"},         // B,N positions -> V,K in Colemak
-    
+
     // Special functions
     {36, 37, KC_BSPC, MOD_BIT(KC_LALT), "Word delete (Alt+Backspace)"}, // 4,5 on number layer
-    
+
     // New emoji and symbol mappings
     {5,  6,  EMOJI_HANDS, 0,            "Raising hands emoji 🙌🏼"},      // T,Y positions -> B,J in Colemak
     {17, 18, EMOJI_LAUGH, 0,            "Laughing emoji 😂"},             // G,H positions -> G,M in Colemak
@@ -288,7 +304,6 @@ const combo_definition_t combo_definitions[] = {
     {15, 20, KC_7,    MOD_BIT(KC_LSFT), "Ampersand &"},                  // D,K positions -> S,E in Colemak
     {14, 21, KC_4,    MOD_BIT(KC_LSFT), "Dollar sign $"},                // S,L positions -> R,I in Colemak
     {27, 32, KC_MINS, MOD_BIT(KC_LSFT), "Underscore _ (alt)"},           // C,COMM positions -> C,COMM in Colemak
-    {3,  8,  SYMBOL_EURO, 0,            "Euro symbol €"},                // E,I positions -> F,U in Colemak (Note: conflicts with asterisk above)
     {16, 17, KC_3,    MOD_BIT(KC_LSFT), "Hash symbol #"},                // F,G positions -> T,G in Colemak
     {18, 19, KC_2,    MOD_BIT(KC_LSFT), "At symbol @"},                  // H,J positions -> M,N in Colemak
     {28, 29, KC_5,    MOD_BIT(KC_LSFT), "Percent symbol %"},             // V,B positions -> D,V in Colemak
@@ -313,25 +328,57 @@ int8_t get_key_position_for_layout(uint16_t keycode, bool is_colemak) {
 bool check_and_execute_combo(int8_t key_pos, bool* combo_keys) {
     for (int i = 0; i < NUM_COMBO_DEFINITIONS; i++) {
         const combo_definition_t* combo = &combo_definitions[i];
-        
+
         // Check if both positions for this combo are pressed
-        if ((key_pos == combo->pos1 || key_pos == combo->pos2) && 
+        if ((key_pos == combo->pos1 || key_pos == combo->pos2) &&
             combo_keys[combo->pos1] && combo_keys[combo->pos2]) {
-            
+
             // Execute the combo
-            if (combo->modifier != 0) {
-                register_mods(combo->modifier);
+            // Handle custom keycodes specially
+            if (combo->output_keycode >= EMOJI_HANDS && combo->output_keycode <= SYMBOL_DOLLAR) {
+                // For custom keycodes, execute directly
+                switch (combo->output_keycode) {
+                    case EMOJI_HANDS:
+                        SEND_STRING("HANDS");  // Test with simple text first
+                        break;
+                    case EMOJI_LAUGH:
+                        SEND_STRING("LAUGH");  // Test with simple text first
+                        break;
+                    case EMOJI_HEART:
+                        SEND_STRING("HEART");  // Test with simple text first
+                        break;
+                    case SYMBOL_EURO:
+                        SEND_STRING("€");
+                        break;
+                    case SYMBOL_ARROW:
+                        SEND_STRING("=>");
+                        break;
+                    case SYMBOL_PERCENT:
+                        SEND_STRING("%");
+                        break;
+                    case SYMBOL_CARET:
+                        SEND_STRING("^");
+                        break;
+                    case SYMBOL_DOLLAR:
+                        SEND_STRING("$");
+                        break;
+                }
+            } else {
+                // For standard keycodes, use normal register/unregister
+                if (combo->modifier != 0) {
+                    register_mods(combo->modifier);
+                }
+                register_code(combo->output_keycode);
+                unregister_code(combo->output_keycode);
+                if (combo->modifier != 0) {
+                    unregister_mods(combo->modifier);
+                }
             }
-            register_code(combo->output_keycode);
-            unregister_code(combo->output_keycode);
-            if (combo->modifier != 0) {
-                unregister_mods(combo->modifier);
-            }
-            
+
             // Clear the combo keys
             combo_keys[combo->pos1] = false;
             combo_keys[combo->pos2] = false;
-            
+
             return true; // Combo was triggered
         }
     }
@@ -346,11 +393,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
     [0] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        KC_GRV,     KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                       KC_Y,   KC_U,    KC_I,    KC_O,    KC_P,   KC_BSPC,
+        KC_GRV,   KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                         KC_Y,   KC_U,    KC_I,    KC_O,    KC_P,   KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    TD_ESC_TAB,     KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                       KC_H,   KC_J,    KC_K,    KC_L,   KC_SCLN,  KC_QUOT,
+     TD_ESC_TAB,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,   KC_J,    KC_K,    KC_L,   KC_SCLN,  KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    MT(MOD_LSFT, KC_TAB), KC_Z, KC_X, KC_C, KC_V, KC_B,                             KC_N,   KC_M,   KC_COMM, KC_DOT,  KC_SLSH, MT(MOD_LSFT, KC_ENT),
+       KC_LSFT,   KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,   KC_M,   KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                 KC_LALT, LT(2, KC_TAB), LT(3, KC_SPC),   MT(MOD_LSFT, KC_ENT), KC_LGUI, KC_RCTL
                                         //`--------------------------'  `--------------------------'
@@ -361,11 +408,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
     [1] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        KC_GRV,     KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN, KC_BSPC,
+        KC_GRV,   KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y,  KC_SCLN, KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    TD_ESC_TAB,     KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,    KC_O,  KC_QUOT,
+     TD_ESC_TAB,  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,   KC_O,   KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    MT(MOD_LSFT, KC_TAB), KC_Z, KC_X, KC_C, KC_D, KC_V,                             KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, MT(MOD_LSFT, KC_ENT),
+       KC_LSFT,   KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                         KC_K,    KC_H,  KC_COMM,  KC_DOT, KC_SLSH, KC_RSFT,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                 KC_LALT, LT(2, KC_TAB), LT(3, KC_SPC),   MT(MOD_LSFT, KC_ENT), KC_LGUI, KC_RCTL
                                         //`--------------------------'  `--------------------------'
@@ -376,11 +423,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
     [2] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        _______, KC_MINS,  KC_EQL, KC_COPY,KC_PASTE, KC_VOLU,                      KC_PSCR, KC_SLCK, KC_PAUS, XXXXXXX, XXXXXXX, _______,
+        _______, XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, KC_BRIU,                      KC_PSCR, KC_SLCK, KC_PAUS, XXXXXXX, XXXXXXX, _______,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, KC_VOLD,                      LALT(KC_LEFT), KC_LEFT, KC_DOWN,  KC_UP,  KC_RGHT, LALT(KC_RGHT),
+        _______, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, KC_BRID,                      LALT(KC_LEFT), KC_LEFT, KC_DOWN,  KC_UP,  KC_RGHT, LALT(KC_RGHT),
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE,                      KC_INS, KC_HOME, KC_PGDN, KC_PGUP,  KC_END, _______,
+        _______, XXXXXXX, XXXXXXX, KC_COPY, KC_PASTE, XXXXXXX,                      KC_INS, KC_HOME, KC_PGDN, KC_PGUP,  KC_END, _______,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,   _______, _______, _______
                                         //`--------------------------'  `--------------------------'
@@ -391,11 +438,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
     [3] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        _______, XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, KC_BRIU,                      KC_MINS,   KC_7,    KC_8,    KC_9,  KC_EQL, _______,
+        _______, SYMBOL_PERCENT, SYMBOL_CARET, SYMBOL_EURO, SYMBOL_DOLLAR, SYMBOL_ARROW,                      KC_MINS,   KC_7,    KC_8,    KC_9,  KC_EQL, _______,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, KC_BRID,                      KC_PLUS,   KC_4,    KC_5,    KC_6, KC_ASTR, XXXXXXX,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_PLUS,   KC_4,    KC_5,    KC_6, KC_ASTR, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, XXXXXXX, XXXXXXX, KC_COPY, KC_PASTE, XXXXXXX,                     KC_EQL,    KC_1,    KC_2,    KC_3, KC_SLSH, _______,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                     KC_EQL,    KC_1,    KC_2,    KC_3, KC_SLSH, _______,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,       LT(4, KC_ENT), KC_0, _______
                                         //`--------------------------'  `--------------------------'
@@ -438,11 +485,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
     [6] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RESET_KBD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        HK_SAVE, XXXXXXX, XXXXXXX, XXXXXXX, HK_S_MODE, HK_D_MODE,                 XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, KC_WH_R, KC_WH_D, KC_WH_U, KC_WH_L, XXXXXXX,
+        RESET_KBD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, KC_WH_R, KC_WH_D, KC_WH_U, KC_WH_L, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,    KC_BTN1, KC_BTN3, KC_BTN2
                                         //`--------------------------'  `--------------------------'
@@ -490,24 +537,74 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
             return false;
         case EMOJI_HANDS:
             if (record->event.pressed) {
-                SEND_STRING(SS_LCTL(SS_LCMD(" ")) "raising hands");  // macOS emoji picker shortcut + search
+                SEND_STRING("🙌🏼");  // Direct emoji output
             }
             return false;
         case EMOJI_LAUGH:
             if (record->event.pressed) {
-                SEND_STRING(SS_LCTL(SS_LCMD(" ")) "joy");  // macOS emoji picker shortcut + search
+                SEND_STRING("😂");
             }
             return false;
         case EMOJI_HEART:
             if (record->event.pressed) {
-                SEND_STRING(SS_LCTL(SS_LCMD(" ")) "red heart");  // macOS emoji picker shortcut + search
+                SEND_STRING("❤️");
             }
             return false;
         case SYMBOL_EURO:
             if (record->event.pressed) {
-                SEND_STRING(SS_LALT("e"));  // Alt+E for Euro symbol on macOS
+                SEND_STRING("€");  // Direct Euro symbol output
             }
             return false;
+        case SYMBOL_ARROW:
+            if (record->event.pressed) {
+                SEND_STRING("=>");  // Arrow symbol
+            }
+            return false;
+        case SYMBOL_PERCENT:
+            if (record->event.pressed) {
+                SEND_STRING("%");  // Percent symbol
+            }
+            return false;
+        case SYMBOL_CARET:
+            if (record->event.pressed) {
+                SEND_STRING("^");  // Caret symbol
+            }
+            return false;
+        case SYMBOL_DOLLAR:
+            if (record->event.pressed) {
+                SEND_STRING("$");  // Dollar symbol
+            }
+            return false;
+        case CAPS_TOGGLE:
+            if (record->event.pressed) {
+                tap_code(KC_CAPS);  // Toggle caps lock
+            }
+            return false;
+    }
+
+    // Handle shift key tracking for caps lock toggle
+    // Check for both shift keys being pressed (regular shift keys)
+    if (keycode == KC_LSFT) {  // Left shift
+        if (record->event.pressed) {
+            left_shift_pressed = true;
+        } else {
+            left_shift_pressed = false;
+            caps_toggle_triggered = false;  // Reset when releasing
+        }
+    } else if (keycode == KC_RSFT) {  // Right shift
+        if (record->event.pressed) {
+            right_shift_pressed = true;
+        } else {
+            right_shift_pressed = false;
+            caps_toggle_triggered = false;  // Reset when releasing
+        }
+    }
+
+    // Check if both shifts are pressed and we haven't triggered yet
+    if (left_shift_pressed && right_shift_pressed && !caps_toggle_triggered) {
+        caps_toggle_triggered = true;
+        tap_code(KC_CAPS);  // Toggle caps lock
+        return false;  // Don't process the key further
     }
 
     // Handle two-key combos for symbols (works on both QWERTY and COLEMAK)
@@ -531,6 +628,9 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                              key_pos == 13 || key_pos == 14 ||  // A,S positions (A,R in Colemak)
                              key_pos == 14 || key_pos == 15 ||  // S,D positions (R,S in Colemak)
                              key_pos == 4 || key_pos == 7 ||    // R,U positions (P,L in Colemak)
+                             key_pos == 5 || key_pos == 6 ||    // T,Y positions (B,J in Colemak) - EMOJI_HANDS
+                             key_pos == 17 || key_pos == 18 ||  // G,H positions (G,M in Colemak) - EMOJI_LAUGH
+                             key_pos == 29 || key_pos == 30 ||  // B,N positions (V,K in Colemak) - EMOJI_HEART
                              key_pos == 28 || key_pos == 31 ||  // V,M positions (D,H in Colemak)
                              key_pos == 16 || key_pos == 19 ||  // F,J positions (T,N in Colemak)
                              key_pos == 29 || key_pos == 30 ||  // B,N positions (V,K in Colemak)
