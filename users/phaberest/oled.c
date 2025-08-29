@@ -209,20 +209,20 @@ bool oled_task_user(void) {
         oled_write_raw_P(OMB_logo, sizeof(OMB_logo));
     } else {
         oled_clear();
-        
+
         // Move down by 2 lines - start layers and modifiers at line 2
         oled_set_cursor(0, 2);
         render_layer_state();
-        
+
         // Add modifier key status (will continue from where render_layer_state left off)
         render_mod_status_gui_alt(get_mods() | get_oneshot_mods());
         render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
-        
+
         // Show layout indicator raised up by 3 lines and centered (line 12, with 2 spaces)
         oled_set_cursor(0, 12);
         oled_write_P(PSTR("     "), false); // Clear the line
         oled_set_cursor(0, 12);
-        
+
         // Show layout name based on default layer - use short names with 2 spaces before
         if (get_highest_layer(default_layer_state) == 0) {
             oled_write_P(PSTR("  Q"), false);     // QWERTY with 2 spaces

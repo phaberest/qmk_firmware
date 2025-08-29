@@ -1,18 +1,22 @@
 #include QMK_KEYBOARD_H
-#include "holykeebs.h"
+#include "enums.h"
+
+// Type definitions for combo mappings
+typedef struct {
+    uint16_t qwerty_keycode;
+    uint16_t colemak_keycode;
+    int8_t position;
+} combo_key_mapping_t;
+
+typedef struct {
+    int8_t pos1;
+    int8_t pos2;
+    uint16_t output_keycode;
+    uint16_t modifier;  // 0 = no modifier, MOD_BIT(KC_LSFT) = shift
+    const char* description;
+} combo_definition_t;
 
 // Tap dance state for ESC/TAB/FN layer
-
-// Layer definitions
-enum layers {
-    _QWERTY = 0,
-    _COLEMAK,
-    _NAV,
-    _NUM,
-    _FN,
-    _GAMING,
-    _MOUSE
-};
 
 #define XXXXXXX KC_NO
 
@@ -151,7 +155,7 @@ uint16_t F_KEYS[] = {
 // Process bitwise function key input
 bool process_bitwise_f(uint16_t keycode, keyrecord_t *record) {
     // Check if we're on the function layer
-    if (get_highest_layer(layer_state) != _FN) {
+    if (get_highest_layer(layer_state) != _F) {
         return true; // Not on function layer, let normal processing continue
     }
 
@@ -188,6 +192,130 @@ bool process_bitwise_f(uint16_t keycode, keyrecord_t *record) {
     }
 
     return false; // Don't process this key normally
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMBO MAPPING DATA DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Physical position mappings (same positions across layouts)
+const combo_key_mapping_t combo_key_mappings[] = {
+    // Top row (positions 0-11)
+    {KC_Q,    KC_Q,    1},   // Q stays Q
+    {KC_W,    KC_W,    2},   // W stays W  
+    {KC_E,    KC_F,    3},   // E -> F
+    {KC_R,    KC_P,    4},   // R -> P
+    {KC_T,    KC_B,    5},   // T -> B
+    {KC_Y,    KC_J,    6},   // Y -> J
+    {KC_U,    KC_L,    7},   // U -> L
+    {KC_I,    KC_U,    8},   // I -> U
+    {KC_O,    KC_Y,    9},   // O -> Y
+    {KC_P,    KC_SCLN, 10}, // P -> ; (SCLN)
+
+    // Home row (positions 12-23)  
+    {KC_A,    KC_A,    13},  // A stays A
+    {KC_S,    KC_R,    14},  // S -> R
+    {KC_D,    KC_S,    15},  // D -> S
+    {KC_F,    KC_T,    16},  // F -> T
+    {KC_G,    KC_G,    17},  // G stays G
+    {KC_H,    KC_M,    18},  // H -> M
+    {KC_J,    KC_N,    19},  // J -> N
+    {KC_K,    KC_E,    20},  // K -> E
+    {KC_L,    KC_I,    21},  // L -> I
+    {KC_SCLN, KC_O,    22},  // ; -> O
+
+    // Bottom row (positions 24-35)
+    {KC_Z,    KC_Z,    25},  // Z stays Z
+    {KC_X,    KC_X,    26},  // X stays X
+    {KC_C,    KC_C,    27},  // C stays C
+    {KC_V,    KC_D,    28},  // V -> D
+    {KC_B,    KC_V,    29},  // B -> V
+    {KC_N,    KC_K,    30},  // N -> K
+    {KC_M,    KC_H,    31},  // M -> H
+    {KC_COMM, KC_COMM, 32},  // , stays ,
+    {KC_DOT,  KC_DOT,  33},  // . stays .
+    {KC_SLSH, KC_SLSH, 34},  // / stays /
+
+    // Number keys for combos (same across layouts)
+    {KC_4,    KC_4,    36},
+    {KC_5,    KC_5,    37},
+};
+
+const int NUM_COMBO_MAPPINGS = sizeof(combo_key_mappings) / sizeof(combo_key_mapping_t);
+
+const combo_definition_t combo_definitions[] = {
+    // Parentheses
+    {15, 16, KC_9,    MOD_BIT(KC_LSFT), "Left parenthesis ("},   // D,F positions -> S,T in Colemak
+    {19, 20, KC_0,    MOD_BIT(KC_LSFT), "Right parenthesis )"},  // J,K positions -> N,E in Colemak
+    
+    // Brackets
+    {3,  4,  KC_LBRC, 0,                "Left bracket ["},       // E,R positions -> F,P in Colemak
+    {7,  8,  KC_RBRC, 0,                "Right bracket ]"},      // U,I positions -> L,U in Colemak
+    
+    // Braces
+    {27, 28, KC_LBRC, MOD_BIT(KC_LSFT), "Left brace {"},         // C,V positions -> C,D in Colemak
+    {31, 32, KC_RBRC, MOD_BIT(KC_LSFT), "Right brace }"},        // M,COMM positions -> H,COMM in Colemak
+    
+    // Comparison operators
+    {2,  3,  KC_COMM, MOD_BIT(KC_LSFT), "Less than <"},          // W,E positions -> W,F in Colemak
+    {8,  9,  KC_DOT,  MOD_BIT(KC_LSFT), "Greater than >"},       // I,O positions -> U,Y in Colemak
+    
+    // Special characters
+    {13, 14, KC_GRV,  MOD_BIT(KC_LSFT), "Tilde ~"},              // A,S positions -> A,R in Colemak
+    {14, 15, KC_GRV,  0,                "Grave `"},               // S,D positions -> R,S in Colemak
+    
+    // Math operators
+    {4,  7,  KC_EQL,  MOD_BIT(KC_LSFT), "Plus +"},               // R,U positions -> P,L in Colemak
+    {28, 31, KC_MINS, 0,                "Minus -"},               // V,M positions -> D,H in Colemak
+    {16, 19, KC_EQL,  0,                "Equal ="},               // F,J positions -> T,N in Colemak
+    {3,  8,  KC_8,    MOD_BIT(KC_LSFT), "Asterisk *"},           // E,I positions -> F,U in Colemak
+    {29, 30, KC_MINS, MOD_BIT(KC_LSFT), "Underscore _"},         // B,N positions -> V,K in Colemak
+    
+    // Special functions
+    {36, 37, KC_BSPC, MOD_BIT(KC_LALT), "Word delete (Alt+Backspace)"}, // 4,5 on number layer
+};
+
+const int NUM_COMBO_DEFINITIONS = sizeof(combo_definitions) / sizeof(combo_definition_t);
+
+// Function implementations for combo system (data imported from combo_mappings.h)
+// Function to get key position based on current layout and keycode
+int8_t get_key_position_for_layout(uint16_t keycode, bool is_colemak) {
+    for (int i = 0; i < NUM_COMBO_MAPPINGS; i++) {
+        uint16_t target_keycode = is_colemak ? combo_key_mappings[i].colemak_keycode : combo_key_mappings[i].qwerty_keycode;
+        if (keycode == target_keycode) {
+            return combo_key_mappings[i].position;
+        }
+    }
+    return -1; // Key not found in combo mappings
+}
+
+// Function to check and execute combos
+bool check_and_execute_combo(int8_t key_pos, bool* combo_keys) {
+    for (int i = 0; i < NUM_COMBO_DEFINITIONS; i++) {
+        const combo_definition_t* combo = &combo_definitions[i];
+        
+        // Check if both positions for this combo are pressed
+        if ((key_pos == combo->pos1 || key_pos == combo->pos2) && 
+            combo_keys[combo->pos1] && combo_keys[combo->pos2]) {
+            
+            // Execute the combo
+            if (combo->modifier != 0) {
+                register_mods(combo->modifier);
+            }
+            register_code(combo->output_keycode);
+            unregister_code(combo->output_keycode);
+            if (combo->modifier != 0) {
+                unregister_mods(combo->modifier);
+            }
+            
+            // Clear the combo keys
+            combo_keys[combo->pos1] = false;
+            combo_keys[combo->pos2] = false;
+            
+            return true; // Combo was triggered
+        }
+    }
+    return false; // No combo triggered
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -343,212 +471,36 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
     }
 
     // Handle two-key combos for symbols (works on both QWERTY and COLEMAK)
-    // First, map QMK keycode to position index for combo tracking
-    int8_t key_pos = -1;
-
-    // Map QMK keycodes to our logical positions
-    switch (keycode) {
-        // Top row (positions 0-11)
-        case KC_Q:    key_pos = 1; break;
-        case KC_W:    key_pos = 2; break;
-        case KC_E:    key_pos = 3; break;
-        case KC_R:    key_pos = 4; break;
-        case KC_T:    key_pos = 5; break;
-        case KC_Y:    key_pos = 6; break;
-        case KC_U:    key_pos = 7; break;
-        case KC_I:    key_pos = 8; break;
-        case KC_O:    key_pos = 9; break;
-        case KC_P:    key_pos = 10; break;
-
-        // Home row (positions 12-23)
-        case KC_A:    key_pos = 13; break;
-        case KC_S:    key_pos = 14; break;
-        case KC_D:    key_pos = 15; break;
-        case KC_F:    key_pos = 16; break;
-        case KC_G:    key_pos = 17; break;
-        case KC_H:    key_pos = 18; break;
-        case KC_J:    key_pos = 19; break;
-        case KC_K:    key_pos = 20; break;
-        case KC_L:    key_pos = 21; break;
-        case KC_SCLN: key_pos = 22; break;
-
-        // Bottom row (positions 24-35)
-        case KC_Z:    key_pos = 25; break;
-        case KC_X:    key_pos = 26; break;
-        case KC_C:    key_pos = 27; break;
-        case KC_V:    key_pos = 28; break;
-        case KC_B:    key_pos = 29; break;
-        case KC_N:    key_pos = 30; break;
-        case KC_M:    key_pos = 31; break;
-        case KC_COMM: key_pos = 32; break;
-        case KC_DOT:  key_pos = 33; break;
-        case KC_SLSH: key_pos = 34; break;
-
-        // Number keys for combos
-        case KC_4:    key_pos = 36; break;
-        case KC_5:    key_pos = 37; break;
-    }
+    // Use the new layout-aware combo system
+    bool is_colemak = (get_highest_layer(default_layer_state) == _COLEMAK);
+    int8_t key_pos = get_key_position_for_layout(keycode, is_colemak);
 
     // Update combo key state if this is a combo-participating key
     if (key_pos >= 0) {
         combo_keys[key_pos] = record->event.pressed;
 
         // Check if this is a combo key that needs delay processing
-        bool is_combo_key = (key_pos == 15 || key_pos == 16 ||  // D,F
-                             key_pos == 19 || key_pos == 20 ||  // J,K
-                             key_pos == 3 || key_pos == 4 ||    // E,R
-                             key_pos == 7 || key_pos == 8 ||    // U,I
-                             key_pos == 27 || key_pos == 28 ||  // C,V
-                             key_pos == 31 || key_pos == 32 ||  // M,COMM
-                             key_pos == 2 || key_pos == 9 ||    // W,E and I,O
-                             key_pos == 13 || key_pos == 14 ||  // A,S and S,D
-                             key_pos == 29 || key_pos == 30 ||  // B,N
+        bool is_combo_key = (key_pos == 15 || key_pos == 16 ||  // D,F positions (S,T in Colemak)
+                             key_pos == 19 || key_pos == 20 ||  // J,K positions (N,E in Colemak)
+                             key_pos == 3 || key_pos == 4 ||    // E,R positions (F,P in Colemak)
+                             key_pos == 7 || key_pos == 8 ||    // U,I positions (L,U in Colemak)
+                             key_pos == 27 || key_pos == 28 ||  // C,V positions (C,D in Colemak)
+                             key_pos == 31 || key_pos == 32 ||  // M,COMM positions (H,COMM in Colemak)
+                             key_pos == 2 || key_pos == 3 ||    // W,E positions (W,F in Colemak)
+                             key_pos == 8 || key_pos == 9 ||    // I,O positions (U,Y in Colemak)
+                             key_pos == 13 || key_pos == 14 ||  // A,S positions (A,R in Colemak)
+                             key_pos == 14 || key_pos == 15 ||  // S,D positions (R,S in Colemak)
+                             key_pos == 4 || key_pos == 7 ||    // R,U positions (P,L in Colemak)
+                             key_pos == 28 || key_pos == 31 ||  // V,M positions (D,H in Colemak)
+                             key_pos == 16 || key_pos == 19 ||  // F,J positions (T,N in Colemak)
+                             key_pos == 29 || key_pos == 30 ||  // B,N positions (V,K in Colemak)
                              key_pos == 36 || key_pos == 37);   // 4,5 (number layer)
 
         if (record->event.pressed && is_combo_key) {
-            // Check if combo is triggered immediately
-            bool combo_triggered = false;
-
-            // Check all two-key combos to see if this key completes one
-            // Left parenthesis: positions 15,16 (D,F)
-            if ((key_pos == 15 || key_pos == 16) && combo_keys[15] && combo_keys[16]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_9);
-                unregister_code(KC_9);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[15] = combo_keys[16] = false;
-                combo_triggered = true;
-            }
-            // Right parenthesis: positions 19,20 (J,K)
-            else if ((key_pos == 19 || key_pos == 20) && combo_keys[19] && combo_keys[20]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_0);
-                unregister_code(KC_0);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[19] = combo_keys[20] = false;
-                combo_triggered = true;
-            }
-            // Left bracket: positions 3,4 (E,R)
-            else if ((key_pos == 3 || key_pos == 4) && combo_keys[3] && combo_keys[4]) {
-                register_code(KC_LBRC);
-                unregister_code(KC_LBRC);
-                combo_keys[3] = combo_keys[4] = false;
-                combo_triggered = true;
-            }
-            // Right bracket: positions 7,8 (U,I)
-            else if ((key_pos == 7 || key_pos == 8) && combo_keys[7] && combo_keys[8]) {
-                register_code(KC_RBRC);
-                unregister_code(KC_RBRC);
-                combo_keys[7] = combo_keys[8] = false;
-                combo_triggered = true;
-            }
-            // Left brace: positions 27,28 (C,V)
-            else if ((key_pos == 27 || key_pos == 28) && combo_keys[27] && combo_keys[28]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_LBRC);
-                unregister_code(KC_LBRC);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[27] = combo_keys[28] = false;
-                combo_triggered = true;
-            }
-            // Right brace: positions 31,32 (M,COMM)
-            else if ((key_pos == 31 || key_pos == 32) && combo_keys[31] && combo_keys[32]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_RBRC);
-                unregister_code(KC_RBRC);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[31] = combo_keys[32] = false;
-                combo_triggered = true;
-            }
-            // Less than: positions 2,3 (W,E)
-            else if ((key_pos == 2 || key_pos == 3) && combo_keys[2] && combo_keys[3]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_COMM);
-                unregister_code(KC_COMM);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[2] = combo_keys[3] = false;
-                combo_triggered = true;
-            }
-            // Greater than: positions 8,9 (I,O)
-            else if ((key_pos == 8 || key_pos == 9) && combo_keys[8] && combo_keys[9]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_DOT);
-                unregister_code(KC_DOT);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[8] = combo_keys[9] = false;
-                combo_triggered = true;
-            }
-            // Tilde: positions 13,14 (A,S)
-            else if ((key_pos == 13 || key_pos == 14) && combo_keys[13] && combo_keys[14]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_GRV);
-                unregister_code(KC_GRV);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[13] = combo_keys[14] = false;
-                combo_triggered = true;
-            }
-            // Grave: positions 14,15 (S,D)
-            else if ((key_pos == 14 || key_pos == 15) && combo_keys[14] && combo_keys[15]) {
-                register_code(KC_GRV);
-                unregister_code(KC_GRV);
-                combo_keys[14] = combo_keys[15] = false;
-                combo_triggered = true;
-            }
-            // Plus: positions 4,7 (R,U)
-            else if ((key_pos == 4 || key_pos == 7) && combo_keys[4] && combo_keys[7]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_EQL);
-                unregister_code(KC_EQL);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[4] = combo_keys[7] = false;
-                combo_triggered = true;
-            }
-            // Minus: positions 28,31 (V,M)
-            else if ((key_pos == 28 || key_pos == 31) && combo_keys[28] && combo_keys[31]) {
-                register_code(KC_MINS);
-                unregister_code(KC_MINS);
-                combo_keys[28] = combo_keys[31] = false;
-                combo_triggered = true;
-            }
-            // Equal: positions 16,19 (F,J)
-            else if ((key_pos == 16 || key_pos == 19) && combo_keys[16] && combo_keys[19]) {
-                register_code(KC_EQL);
-                unregister_code(KC_EQL);
-                combo_keys[16] = combo_keys[19] = false;
-                combo_triggered = true;
-            }
-            // Asterisk: positions 3,8 (E,I)
-            else if ((key_pos == 3 || key_pos == 8) && combo_keys[3] && combo_keys[8]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_8);
-                unregister_code(KC_8);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[3] = combo_keys[8] = false;
-                combo_triggered = true;
-            }
-            // Underscore: positions 29,30 (B,N)
-            else if ((key_pos == 29 || key_pos == 30) && combo_keys[29] && combo_keys[30]) {
-                register_mods(MOD_BIT(KC_LSFT));
-                register_code(KC_MINS);
-                unregister_code(KC_MINS);
-                unregister_mods(MOD_BIT(KC_LSFT));
-                combo_keys[29] = combo_keys[30] = false;
-                combo_triggered = true;
-            }
-            // Option+Backspace (word delete): positions 36,37 (4,5 on number layer)
-            else if ((key_pos == 36 || key_pos == 37) && combo_keys[36] && combo_keys[37]) {
-                register_mods(MOD_BIT(KC_LALT));
-                register_code(KC_BSPC);
-                unregister_code(KC_BSPC);
-                unregister_mods(MOD_BIT(KC_LALT));
-                combo_keys[36] = combo_keys[37] = false;
-                combo_triggered = true;
-            }
-
-            // If combo was triggered, don't process individually
-            if (combo_triggered) {
+            // Check if combo is triggered immediately using the new system
+            if (check_and_execute_combo(key_pos, combo_keys)) {
                 pending_key.pending = false; // Cancel any pending key
-                return false;
+                return false; // Combo was triggered, don't process individually
             }
 
             // If no combo triggered and no pending key, start timer for this key
