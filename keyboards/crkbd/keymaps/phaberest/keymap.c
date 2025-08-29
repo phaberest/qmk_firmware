@@ -298,12 +298,11 @@ const combo_definition_t combo_definitions[] = {
     // New emoji and symbol mappings
     {5,  6,  EMOJI_HANDS, 0,            "Raising hands emoji 🙌🏼"},      // T,Y positions -> B,J in Colemak
     {17, 18, EMOJI_LAUGH, 0,            "Laughing emoji 😂"},             // G,H positions -> G,M in Colemak
-    {29, 30, EMOJI_HEART, 0,            "Heart emoji ❤️"},               // B,N positions -> V,K in Colemak (Note: conflicts with underscore above)
+    {29, 30, EMOJI_HEART, 0,            "Heart emoji ❤️"},               // B,N positions -> V,K in Colemak
     {6,  7,  KC_1,    MOD_BIT(KC_LSFT), "Exclamation mark !"},           // Y,U positions -> J,L in Colemak
-    {4,  5,  KC_8,    MOD_BIT(KC_LSFT), "Asterisk * (alt)"},             // R,T positions -> P,B in Colemak
     {15, 20, KC_7,    MOD_BIT(KC_LSFT), "Ampersand &"},                  // D,K positions -> S,E in Colemak
     {14, 21, KC_4,    MOD_BIT(KC_LSFT), "Dollar sign $"},                // S,L positions -> R,I in Colemak
-    {27, 32, KC_MINS, MOD_BIT(KC_LSFT), "Underscore _ (alt)"},           // C,COMM positions -> C,COMM in Colemak
+    {4,  5,  KC_MINS, MOD_BIT(KC_LSFT), "Underscore _"},                 // R,T positions -> P,B in Colemak
     {16, 17, KC_3,    MOD_BIT(KC_LSFT), "Hash symbol #"},                // F,G positions -> T,G in Colemak
     {18, 19, KC_2,    MOD_BIT(KC_LSFT), "At symbol @"},                  // H,J positions -> M,N in Colemak
     {28, 29, KC_5,    MOD_BIT(KC_LSFT), "Percent symbol %"},             // V,B positions -> D,V in Colemak
@@ -339,16 +338,44 @@ bool check_and_execute_combo(int8_t key_pos, bool* combo_keys) {
                 // For custom keycodes, execute directly
                 switch (combo->output_keycode) {
                     case EMOJI_HANDS:
-                        SEND_STRING("HANDS");  // Test with simple text first
+                        // Open emoji picker and type "raised hands"
+                        register_mods(MOD_LCTL | MOD_LGUI);
+                        register_code(KC_SPC);
+                        unregister_code(KC_SPC);
+                        unregister_mods(MOD_LCTL | MOD_LGUI);
+                        wait_ms(200);
+                        SEND_STRING("raised hands");
+                        wait_ms(50);
+                        tap_code(KC_ENT);
                         break;
                     case EMOJI_LAUGH:
-                        SEND_STRING("LAUGH");  // Test with simple text first
+                        // Open emoji picker and type "joy"
+                        register_mods(MOD_LCTL | MOD_LGUI);
+                        register_code(KC_SPC);
+                        unregister_code(KC_SPC);
+                        unregister_mods(MOD_LCTL | MOD_LGUI);
+                        wait_ms(200);
+                        SEND_STRING("joy");
+                        wait_ms(50);
+                        tap_code(KC_ENT);
                         break;
                     case EMOJI_HEART:
-                        SEND_STRING("HEART");  // Test with simple text first
+                        // Open emoji picker and type "heart"
+                        register_mods(MOD_LCTL | MOD_LGUI);
+                        register_code(KC_SPC);
+                        unregister_code(KC_SPC);
+                        unregister_mods(MOD_LCTL | MOD_LGUI);
+                        wait_ms(200);
+                        SEND_STRING("heart");
+                        wait_ms(50);
+                        tap_code(KC_ENT);
                         break;
                     case SYMBOL_EURO:
-                        SEND_STRING("€");
+                        // Use Option+Shift+2 for Euro symbol on macOS
+                        register_mods(MOD_LALT | MOD_LSFT);
+                        register_code(KC_2);
+                        unregister_code(KC_2);
+                        unregister_mods(MOD_LALT | MOD_LSFT);
                         break;
                     case SYMBOL_ARROW:
                         SEND_STRING("=>");
@@ -535,24 +562,13 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return false;
-        case EMOJI_HANDS:
-            if (record->event.pressed) {
-                SEND_STRING("🙌🏼");  // Direct emoji output
-            }
-            return false;
-        case EMOJI_LAUGH:
-            if (record->event.pressed) {
-                SEND_STRING("😂");
-            }
-            return false;
-        case EMOJI_HEART:
-            if (record->event.pressed) {
-                SEND_STRING("❤️");
-            }
-            return false;
         case SYMBOL_EURO:
             if (record->event.pressed) {
-                SEND_STRING("€");  // Direct Euro symbol output
+                // Use Option+Shift+2 for Euro symbol on macOS
+                register_mods(MOD_LALT | MOD_LSFT);
+                register_code(KC_2);
+                unregister_code(KC_2);
+                unregister_mods(MOD_LALT | MOD_LSFT);
             }
             return false;
         case SYMBOL_ARROW:
