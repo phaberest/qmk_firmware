@@ -6,6 +6,12 @@
 
 extern uint8_t is_master;
 
+// Simple layout indicator function (unused but keeping interface)
+void show_layout_indicator(bool is_colemak) {
+    // Do nothing - we're displaying layout constantly now
+}
+
+// OMB logo for mouse layer
 static const char PROGMEM OMB_logo[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0xe0, 0xf0, 0xf0, 0xe0, 0xe0, 0xc0,
 	0xe0, 0xe0, 0x70, 0x70, 0xf0, 0xe0, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -34,74 +40,33 @@ static const char PROGMEM OMB_logo[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x03, 0x03, 0xf4, 0x9c, 0x08, 0x10,
 	0x10, 0x10, 0x10, 0x10, 0x08, 0xf4, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-/* KEYBOARD PET START */
+// Render functions copied from original oled.c
+void render_layer_state(void) {
+    static const char PROGMEM default_layer[] = {0x20, 0x94, 0x95, 0x96, 0x20, 0x20, 0xb4, 0xb5, 0xb6, 0x20, 0x20, 0xd4, 0xd5, 0xd6, 0x20, 0};
+    static const char PROGMEM raise_layer[]   = {0x20, 0x97, 0x98, 0x99, 0x20, 0x20, 0xb7, 0xb8, 0xb9, 0x20, 0x20, 0xd7, 0xd8, 0xd9, 0x20, 0};
+    static const char PROGMEM lower_layer[]   = {0x20, 0x9a, 0x9b, 0x9c, 0x20, 0x20, 0xba, 0xbb, 0xbc, 0x20, 0x20, 0xda, 0xdb, 0xdc, 0x20, 0};
+    static const char PROGMEM adjust_layer[]  = {0x20, 0x9d, 0x9e, 0x9f, 0x20, 0x20, 0xbd, 0xbe, 0xbf, 0x20, 0x20, 0xdd, 0xde, 0xdf, 0x20, 0};
 
-/* logic */
-// static void render_luna(int LUNA_X, int LUNA_Y) {
-
-//     /* animation */
-//     void animate_luna(void) {
-//         /* jump */
-//         if (isJumping || !showedJump) {
-//             /* clear */
-//             oled_set_cursor(LUNA_X, LUNA_Y + 2);
-//             oled_write("     ", false);
-
-//             oled_set_cursor(LUNA_X, LUNA_Y - 1);
-
-//             showedJump = true;
-//         } else {
-//             /* clear */
-//             oled_set_cursor(LUNA_X, LUNA_Y - 1);
-//             oled_write("     ", false);
-
-//             oled_set_cursor(LUNA_X, LUNA_Y);
-//         }
-
-//         /* switch frame */
-//         current_frame = (current_frame + 1) % 2;
-
-//         /* current status */
-//         if (led_usb_state.caps_lock) {
-//             oled_write_raw_P(bark[abs(1 - current_frame)], ANIM_SIZE);
-
-//         } else if (isSneaking) {
-//             oled_write_raw_P(sneak[abs(1 - current_frame)], ANIM_SIZE);
-
-//         } else if (current_wpm <= MIN_WALK_SPEED) {
-//             oled_write_raw_P(sit[abs(1 - current_frame)], ANIM_SIZE);
-
-//         } else if (current_wpm <= MIN_RUN_SPEED) {
-//             oled_write_raw_P(walk[abs(1 - current_frame)], ANIM_SIZE);
-
-//         } else {
-//             oled_write_raw_P(run[abs(1 - current_frame)], ANIM_SIZE);
-//         }
-//     }
-
-//     /* animation timer */
-//     if (timer_elapsed32(anim_timer) > ANIM_FRAME_DURATION) {
-//         anim_timer = timer_read32();
-//         animate_luna();
-//     }
-
-//     /* this fixes the screen on and off bug */
-//     if (current_wpm > 0) {
-//         oled_on();
-//         anim_sleep = timer_read32();
-//     } else if (timer_elapsed32(anim_sleep) > OLED_TIMEOUT) {
-//         /* clear */
-//         oled_set_cursor(0, 0);
-//         oled_write("                                                                                                    ", false);
-//         oled_off();
-//         oled_set_cursor(LUNA_X, LUNA_Y);
-//     }
-// }
-
-/* KEYBOARD PET END */
+    // Updated layer order: check highest numbered layers first
+    if (layer_state_is(_GAME)) {        // Layer 5 (Gaming)
+        oled_write_P(adjust_layer, false);
+    } else if (layer_state_is(_F)) {    // Layer 4 (Function/FN)
+        oled_write_P(adjust_layer, false);
+    } else if (layer_state_is(_NUMS)) { // Layer 3 (Numbers/NUM) - should show raise_layer
+        oled_write_P(raise_layer, false);
+    } else if (layer_state_is(_ARROWS)) { // Layer 2 (Navigation/NAV)
+        oled_write_P(lower_layer, false);
+    } else {
+        oled_write_P(default_layer, false);
+    }
+}
 
 void render_mod_status_gui_alt(uint8_t modifiers) {
     static const char PROGMEM gui_off_1[] = {0x85, 0x86, 0};
@@ -235,75 +200,6 @@ void render_mod_status_ctrl_shift(uint8_t modifiers) {
     }
 }
 
-void render_logo(void) {
-    oled_set_cursor(0, 0);
-
-    if (keymap_config.swap_lctl_lgui) {
-        oled_write_raw_P(mac_logo, sizeof(mac_logo));
-    } else {
-        oled_write_raw_P(windows_logo, sizeof(windows_logo));
-    }
-
-    oled_set_cursor(0, 3);
-}
-
-
-void render_layer_state(void) {
-    static const char PROGMEM default_layer[] = {0x20, 0x94, 0x95, 0x96, 0x20, 0x20, 0xb4, 0xb5, 0xb6, 0x20, 0x20, 0xd4, 0xd5, 0xd6, 0x20, 0};
-    static const char PROGMEM raise_layer[]   = {0x20, 0x97, 0x98, 0x99, 0x20, 0x20, 0xb7, 0xb8, 0xb9, 0x20, 0x20, 0xd7, 0xd8, 0xd9, 0x20, 0};
-    static const char PROGMEM lower_layer[]   = {0x20, 0x9a, 0x9b, 0x9c, 0x20, 0x20, 0xba, 0xbb, 0xbc, 0x20, 0x20, 0xda, 0xdb, 0xdc, 0x20, 0};
-    static const char PROGMEM adjust_layer[]  = {0x20, 0x9d, 0x9e, 0x9f, 0x20, 0x20, 0xbd, 0xbe, 0xbf, 0x20, 0x20, 0xdd, 0xde, 0xdf, 0x20, 0};
-
-    if (layer_state_is(_F)) {
-        oled_write_P(adjust_layer, false);
-    } else if (layer_state_is(_ARROWS)) {
-        oled_write_P(lower_layer, false);
-    } else if (layer_state_is(_NUMS)) {
-        oled_write_P(raise_layer, false);
-    } else if (layer_state_is(_GAME)) {
-        oled_write_P(adjust_layer, false);
-    } else {
-        oled_write_P(default_layer, false);
-    }
-}
-
-void render_space(void) { oled_write_P(PSTR("     "), false); }
-
-void render_status_main(void) {
-    render_layer_state();
-    render_space();
-    render_mod_status_gui_alt(get_mods() | get_oneshot_mods());
-    render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
-}
-
-void oled_render_layer_state(void) {
-    render_logo();
-
-    render_status_main();
-}
-
-// static void print_status_narrow(void) {
-//     render_logo();
-
-//     render_status_main();
-
-//     oled_set_cursor(0, 5);
-
-//     /* Print current layer */
-
-//     oled_set_cursor(0, 6);
-
-//     /* caps lock */
-//     oled_set_cursor(0, 8);
-//     // oled_write("CPSLK", led_usb_state.caps_lock);
-
-//     /* KEYBOARD PET RENDER START */
-
-//     // render_luna(0, 13);
-
-//     /* KEYBOARD PET RENDER END */
-// }
-
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_270; }
 
 bool oled_task_user(void) {
@@ -313,7 +209,26 @@ bool oled_task_user(void) {
         oled_write_raw_P(OMB_logo, sizeof(OMB_logo));
     } else {
         oled_clear();
-        oled_render_layer_state();
+        
+        // Move down by 2 lines - start layers and modifiers at line 2
+        oled_set_cursor(0, 2);
+        render_layer_state();
+        
+        // Add modifier key status (will continue from where render_layer_state left off)
+        render_mod_status_gui_alt(get_mods() | get_oneshot_mods());
+        render_mod_status_ctrl_shift(get_mods() | get_oneshot_mods());
+        
+        // Show layout indicator raised up by 3 lines and centered (line 12, with 2 spaces)
+        oled_set_cursor(0, 12);
+        oled_write_P(PSTR("     "), false); // Clear the line
+        oled_set_cursor(0, 12);
+        
+        // Show layout name based on default layer - use short names with 2 spaces before
+        if (get_highest_layer(default_layer_state) == 0) {
+            oled_write_P(PSTR("  Q"), false);     // QWERTY with 2 spaces
+        } else {
+            oled_write_P(PSTR("  C"), false);     // COLEMAK with 2 spaces
+        }
     }
 
     return false;

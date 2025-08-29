@@ -1,15 +1,17 @@
 #include QMK_KEYBOARD_H
-#include "users/phaberest/holykeebs.h"
+#include "holykeebs.h"
+
+// Tap dance state for ESC/TAB/FN layer
 
 // Layer definitions
 enum layers {
     _QWERTY = 0,
+    _COLEMAK,
     _NAV,
     _NUM,
     _FN,
     _GAMING,
-    _MOUSE,
-    _COLEMAK
+    _MOUSE
 };
 
 #define XXXXXXX KC_NO
@@ -31,6 +33,11 @@ enum {
 enum custom_keycodes {
     RESET_KBD = SAFE_RANGE,
     TOGGLE_LAYOUT,
+    BIT_0,
+    BIT_1,
+    BIT_2,
+    BIT_3,
+    BIT_4,
 };
 
 // Tap dance state for ESC/TAB/FN layer
@@ -109,7 +116,7 @@ tap_dance_action_t tap_dance_actions[] = {
 static bool combo_keys[38] = {false};
 
 // Timer-based combo detection
-#define COMBO_DELAY_MS 25
+#define COMBO_DELAY_MS 35
 typedef struct {
     uint16_t keycode;
     uint16_t timer;
@@ -128,15 +135,7 @@ static int8_t bitwise_pressed_keys = 0;
 static uint8_t bitwise_accumulator = 0;
 
 // Define which keys act as bit inputs on the function layer (left home row)
-// We'll use A, S, D, F, G for 5 bits = 32 combinations (enough for F1-F24)
-enum bitwise_keys {
-    BIT_0 = KC_A,    // Bit 1 (2^0)
-    BIT_1 = KC_S,    // Bit 2 (2^1)
-    BIT_2 = KC_D,    // Bit 4 (2^2)
-    BIT_3 = KC_F,    // Bit 8 (2^3)
-    BIT_4 = KC_G,    // Bit 16 (2^4)
-};
-
+// We'll use the BIT_0 through BIT_4 keycodes from the custom enum above
 const uint16_t bitwise_f_keys[] = { BIT_0, BIT_1, BIT_2, BIT_3, BIT_4 };
 uint8_t NUM_BITWISE_F_KEYS = sizeof(bitwise_f_keys) / sizeof(uint16_t);
 
@@ -205,14 +204,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
     MT(MOD_LSFT, KC_TAB), KC_Z, KC_X, KC_C, KC_V, KC_B,                             KC_N,   KC_M,   KC_COMM, KC_DOT,  KC_SLSH, MT(MOD_LSFT, KC_ENT),
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                KC_LALT, LT(1, KC_TAB), LT(2, KC_SPC),   MT(MOD_LSFT, KC_ENT), KC_LGUI, KC_RCTL
+                                KC_LALT, LT(2, KC_TAB), LT(3, KC_SPC),   MT(MOD_LSFT, KC_ENT), KC_LGUI, KC_RCTL
                                         //`--------------------------'  `--------------------------'
     ),
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // LAYER 1: NAVIGATION / MEDIA LAYER
+    // LAYER 1: COLEMAK-DH BASE LAYER
     // ═══════════════════════════════════════════════════════════════════════════
     [1] = LAYOUT_split_3x6_3(
+    //,-----------------------------------------------------.                    ,-----------------------------------------------------.
+        KC_GRV,     KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN, KC_BSPC,
+    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+    TD_ESC_TAB,     KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,    KC_O,  KC_QUOT,
+    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+    MT(MOD_LSFT, KC_TAB), KC_Z, KC_X, KC_C, KC_D, KC_V,                             KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, MT(MOD_LSFT, KC_ENT),
+    //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+                                KC_LALT, LT(2, KC_TAB), LT(3, KC_SPC),   MT(MOD_LSFT, KC_ENT), KC_LGUI, KC_RCTL
+                                        //`--------------------------'  `--------------------------'
+    ),
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LAYER 2: NAVIGATION / MEDIA LAYER
+    // ═══════════════════════════════════════════════════════════════════════════
+    [2] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         _______, KC_MINS,  KC_EQL, KC_COPY,KC_PASTE, KC_VOLU,                      KC_PSCR, KC_SLCK, KC_PAUS, XXXXXXX, XXXXXXX, _______,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -225,9 +239,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // LAYER 2: NUMBERS / SYMBOLS LAYER
+    // LAYER 3: NUMBERS / SYMBOLS LAYER
     // ═══════════════════════════════════════════════════════════════════════════
-    [2] = LAYOUT_split_3x6_3(
+    [3] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         _______, XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, KC_BRIU,                      KC_MINS,   KC_7,    KC_8,    KC_9,  KC_EQL, _______,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -235,16 +249,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, XXXXXXX, XXXXXXX, KC_COPY, KC_PASTE, XXXXXXX,                     KC_EQL,    KC_1,    KC_2,    KC_3, KC_SLSH, _______,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                            _______, _______, _______,       LT(3, KC_ENT), KC_0, _______
+                                            _______, _______, _______,       LT(4, KC_ENT), KC_0, _______
                                         //`--------------------------'  `--------------------------'
     ),
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // LAYER 3: FUNCTION KEYS LAYER (BITWISE INPUT)
+    // LAYER 4: FUNCTION KEYS LAYER (BITWISE INPUT)
     // ═══════════════════════════════════════════════════════════════════════════
     // Left home row uses bitwise input: A(1) + S(2) + D(4) + F(8) + G(16) = F1-F24
     // Example: A+D = 1+4 = 5 = F5, S+F = 2+8 = 10 = F10, etc.
-    [3] = LAYOUT_split_3x6_3(
+    [4] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,   XXXXXXX,   XXXXXXX,   XXXXXXX, XXXXXXX, TOGGLE_LAYOUT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -257,9 +271,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // LAYER 4: GAMING LAYER
+    // LAYER 5: GAMING LAYER
     // ═══════════════════════════════════════════════════════════════════════════
-    [4] = LAYOUT_split_3x6_3(
+    [5] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         KC_TAB,     KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                         KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,  KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -272,9 +286,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // LAYER 5: MOUSE / UTILITIES LAYER
+    // LAYER 6: MOUSE / UTILITIES LAYER
     // ═══════════════════════════════════════════════════════════════════════════
-    [5] = LAYOUT_split_3x6_3(
+    [6] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RESET_KBD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -285,22 +299,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                             _______, _______, _______,    KC_BTN1, KC_BTN3, KC_BTN2
                                         //`--------------------------'  `--------------------------'
     ),
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // LAYER 6: COLEMAK-DH BASE LAYER
-    // ═══════════════════════════════════════════════════════════════════════════
-    [6] = LAYOUT_split_3x6_3(
-    //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        KC_GRV,     KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN, KC_BSPC,
-    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    TD_ESC_TAB,     KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,    KC_O,  KC_QUOT,
-    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-    MT(MOD_LSFT, KC_TAB), KC_Z, KC_X, KC_C, KC_D, KC_V,                             KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, MT(MOD_LSFT, KC_ENT),
-    //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                KC_LALT, LT(1, KC_TAB), LT(2, KC_SPC),   MT(MOD_LSFT, KC_ENT), KC_LGUI, KC_RCTL
-                                        //`--------------------------'  `--------------------------'
-    ),
-
 };
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
