@@ -42,6 +42,11 @@ enum custom_keycodes {
     BIT_2,
     BIT_3,
     BIT_4,
+    // Emoji keycodes
+    EMOJI_HANDS,     // 🙌🏼
+    EMOJI_LAUGH,     // 😂
+    EMOJI_HEART,     // ❤️
+    SYMBOL_EURO,     // €
 };
 
 // Tap dance state for ESC/TAB/FN layer
@@ -273,6 +278,21 @@ const combo_definition_t combo_definitions[] = {
     
     // Special functions
     {36, 37, KC_BSPC, MOD_BIT(KC_LALT), "Word delete (Alt+Backspace)"}, // 4,5 on number layer
+    
+    // New emoji and symbol mappings
+    {5,  6,  EMOJI_HANDS, 0,            "Raising hands emoji 🙌🏼"},      // T,Y positions -> B,J in Colemak
+    {17, 18, EMOJI_LAUGH, 0,            "Laughing emoji 😂"},             // G,H positions -> G,M in Colemak
+    {29, 30, EMOJI_HEART, 0,            "Heart emoji ❤️"},               // B,N positions -> V,K in Colemak (Note: conflicts with underscore above)
+    {6,  7,  KC_1,    MOD_BIT(KC_LSFT), "Exclamation mark !"},           // Y,U positions -> J,L in Colemak
+    {4,  5,  KC_8,    MOD_BIT(KC_LSFT), "Asterisk * (alt)"},             // R,T positions -> P,B in Colemak
+    {15, 20, KC_7,    MOD_BIT(KC_LSFT), "Ampersand &"},                  // D,K positions -> S,E in Colemak
+    {14, 21, KC_4,    MOD_BIT(KC_LSFT), "Dollar sign $"},                // S,L positions -> R,I in Colemak
+    {27, 32, KC_MINS, MOD_BIT(KC_LSFT), "Underscore _ (alt)"},           // C,COMM positions -> C,COMM in Colemak
+    {3,  8,  SYMBOL_EURO, 0,            "Euro symbol €"},                // E,I positions -> F,U in Colemak (Note: conflicts with asterisk above)
+    {16, 17, KC_3,    MOD_BIT(KC_LSFT), "Hash symbol #"},                // F,G positions -> T,G in Colemak
+    {18, 19, KC_2,    MOD_BIT(KC_LSFT), "At symbol @"},                  // H,J positions -> M,N in Colemak
+    {28, 29, KC_5,    MOD_BIT(KC_LSFT), "Percent symbol %"},             // V,B positions -> D,V in Colemak
+    {30, 31, KC_6,    MOD_BIT(KC_LSFT), "Caret symbol ^"},               // N,M positions -> K,H in Colemak
 };
 
 const int NUM_COMBO_DEFINITIONS = sizeof(combo_definitions) / sizeof(combo_definition_t);
@@ -468,6 +488,26 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return false;
+        case EMOJI_HANDS:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LCTL(SS_LCMD(" ")) "raising hands");  // macOS emoji picker shortcut + search
+            }
+            return false;
+        case EMOJI_LAUGH:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LCTL(SS_LCMD(" ")) "joy");  // macOS emoji picker shortcut + search
+            }
+            return false;
+        case EMOJI_HEART:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LCTL(SS_LCMD(" ")) "red heart");  // macOS emoji picker shortcut + search
+            }
+            return false;
+        case SYMBOL_EURO:
+            if (record->event.pressed) {
+                SEND_STRING(SS_LALT("e"));  // Alt+E for Euro symbol on macOS
+            }
+            return false;
     }
 
     // Handle two-key combos for symbols (works on both QWERTY and COLEMAK)
@@ -494,7 +534,11 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                              key_pos == 28 || key_pos == 31 ||  // V,M positions (D,H in Colemak)
                              key_pos == 16 || key_pos == 19 ||  // F,J positions (T,N in Colemak)
                              key_pos == 29 || key_pos == 30 ||  // B,N positions (V,K in Colemak)
-                             key_pos == 36 || key_pos == 37);   // 4,5 (number layer)
+                             key_pos == 36 || key_pos == 37 ||  // 4,5 (number layer)
+                             // New emoji and symbol combos
+                             key_pos == 5 || key_pos == 6 ||    // T,Y positions (B,J in Colemak)
+                             key_pos == 17 || key_pos == 18 ||  // G,H positions (G,M in Colemak)
+                             key_pos == 21);                    // L position (I in Colemak)
 
         if (record->event.pressed && is_combo_key) {
             // Check if combo is triggered immediately using the new system
