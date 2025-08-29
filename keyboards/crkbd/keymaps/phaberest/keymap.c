@@ -36,10 +36,6 @@ static bool caps_toggle_triggered = false;
 #define RALT_X RALT_T(KC_X)
 #define RALT_DOT RALT_T(KC_DOT)
 
-enum {
-    TD_ESC_TAB,
-};
-
 enum custom_keycodes {
     RESET_KBD = SAFE_RANGE,
     TOGGLE_LAYOUT,
@@ -60,69 +56,6 @@ enum custom_keycodes {
     SYMBOL_CARET,    // ^
     SYMBOL_DOLLAR,   // $
 };
-
-// Tap dance state for ESC/TAB/FN layer
-typedef struct {
-    bool is_press_action;
-    uint8_t state;
-} tap;
-
-enum {
-    SINGLE_TAP = 1,
-    SINGLE_HOLD = 2,
-    DOUBLE_TAP = 3,
-};
-
-// Forward declarations
-void esc_tab_finished(tap_dance_state_t *state, void *user_data);
-void esc_tab_reset(tap_dance_state_t *state, void *user_data);
-
-// Determine the current tap dance state
-uint8_t cur_dance(tap_dance_state_t *state) {
-    if (state->count == 1) {
-        if (!state->pressed) return SINGLE_TAP;
-        else return SINGLE_HOLD;
-    } else if (state->count == 2) {
-        return DOUBLE_TAP;
-    } else return 8; // Magic number. At some point this method will expand to work for more presses
-}
-
-// Initialize tap structure associated with example tap dance key
-static tap esc_tab_tap_state = {
-    .is_press_action = true,
-    .state = 0
-};
-
-// Functions that control what our tap dance key does
-void esc_tab_finished(tap_dance_state_t *state, void *user_data) {
-    esc_tab_tap_state.state = cur_dance(state);
-    switch (esc_tab_tap_state.state) {
-        case SINGLE_TAP:
-            tap_code(KC_ESC);
-            break;
-        case SINGLE_HOLD:
-            layer_on(_MOUSE);
-            break;
-        case DOUBLE_TAP:
-            tap_code(KC_TAB);
-            break;
-    }
-}
-
-void esc_tab_reset(tap_dance_state_t *state, void *user_data) {
-    // If the key was held down and now is released then switch off the layer
-    if (esc_tab_tap_state.state == SINGLE_HOLD) {
-        layer_off(_MOUSE);
-    }
-    esc_tab_tap_state.state = 0;
-}
-
-tap_dance_action_t tap_dance_actions[] = {
-    // Tap once for ESC, twice for TAB, hold for FN layer
-    [TD_ESC_TAB] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, esc_tab_finished, esc_tab_reset),
-};
-
-#define TD_ESC_TAB TD(TD_ESC_TAB)
 
 // Two-key combo state tracking variables
 // Key position mapping for 3x6 split layout (0-35):
@@ -422,7 +355,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         KC_GRV,   KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                         KC_Y,   KC_U,    KC_I,    KC_O,    KC_P,   KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-     TD_ESC_TAB,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,   KC_J,    KC_K,    KC_L,   KC_SCLN,  KC_QUOT,
+        KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,   KC_J,    KC_K,    KC_L,   KC_SCLN,  KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
        KC_LSFT,   KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,   KC_M,   KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -437,7 +370,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         KC_GRV,   KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y,  KC_SCLN, KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-     TD_ESC_TAB,  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,   KC_O,   KC_QUOT,
+        KC_ESC,  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,   KC_O,   KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
        KC_LSFT,   KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                         KC_K,    KC_H,  KC_COMM,  KC_DOT, KC_SLSH, KC_RSFT,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
