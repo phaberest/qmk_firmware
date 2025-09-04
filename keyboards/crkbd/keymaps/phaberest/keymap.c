@@ -2,21 +2,6 @@
 #include "enums.h"
 #include "users/phaberest/holykeebs.h"
 
-// Type definitions for combo mappings
-typedef struct {
-    uint16_t qwerty_keycode;
-    uint16_t colemak_keycode;
-    int8_t position;
-} combo_key_mapping_t;
-
-typedef struct {
-    int8_t pos1;
-    int8_t pos2;
-    uint16_t output_keycode;
-    uint16_t modifier;  // 0 = no modifier, MOD_BIT(KC_LSFT) = shift
-    const char* description;
-} combo_definition_t;
-
 // Tap dance state for ESC/TAB/FN layer
 
 #define XXXXXXX KC_NO
@@ -63,28 +48,79 @@ enum custom_keycodes {
     CHAT_MODE,       // Temporary chat mode in gaming
 };
 
-// Two-key combo state tracking variables
-// Key position mapping for 3x6 split layout (0-35):
-// Left:  0  1  2  3  4  5
-//        12 13 14 15 16 17
-//        24 25 26 27 28 29
-// Right: 6  7  8  9  10 11
-//        18 19 20 21 22 23
-//        30 31 32 33 34 35
+// QMK Native Combo Definitions
+// Define combo key sequences for QWERTY layout
 
-// Combo state variables for each key that participates in combos
-static bool combo_keys[38] = {false};
+// Parentheses combos
+const uint16_t PROGMEM combo_lparen[] = {KC_D, KC_F, COMBO_END}; // Left parenthesis (
+const uint16_t PROGMEM combo_rparen[] = {KC_J, KC_K, COMBO_END}; // Right parenthesis )
 
-// Timer-based combo detection
-#define COMBO_DELAY_MS 35
-typedef struct {
-    uint16_t keycode;
-    uint16_t timer;
-    bool pending;
-    int8_t key_pos;
-} pending_key_t;
+// Brackets combos
+const uint16_t PROGMEM combo_lbracket[] = {KC_E, KC_R, COMBO_END}; // Left bracket [
+const uint16_t PROGMEM combo_rbracket[] = {KC_U, KC_I, COMBO_END}; // Right bracket ]
 
-static pending_key_t pending_key = {0, 0, false, -1};
+// Braces combos
+const uint16_t PROGMEM combo_lbrace[] = {KC_C, KC_V, COMBO_END}; // Left brace {
+const uint16_t PROGMEM combo_rbrace[] = {KC_M, KC_COMM, COMBO_END}; // Right brace }
+
+// Comparison operators
+const uint16_t PROGMEM combo_less[] = {KC_W, KC_E, COMBO_END}; // Less than <
+const uint16_t PROGMEM combo_greater[] = {KC_I, KC_O, COMBO_END}; // Greater than >
+
+// Special characters
+const uint16_t PROGMEM combo_tilde[] = {KC_A, KC_S, COMBO_END}; // Tilde ~
+const uint16_t PROGMEM combo_grave[] = {KC_S, KC_D, COMBO_END}; // Grave `
+
+// Math operators
+const uint16_t PROGMEM combo_plus[] = {KC_R, KC_U, COMBO_END}; // Plus +
+const uint16_t PROGMEM combo_minus[] = {KC_V, KC_M, COMBO_END}; // Minus -
+const uint16_t PROGMEM combo_equal[] = {KC_F, KC_J, COMBO_END}; // Equal =
+const uint16_t PROGMEM combo_asterisk[] = {KC_E, KC_I, COMBO_END}; // Asterisk *
+const uint16_t PROGMEM combo_underscore[] = {KC_B, KC_N, COMBO_END}; // Underscore _
+
+// Special functions
+const uint16_t PROGMEM combo_word_del[] = {KC_4, KC_5, COMBO_END}; // Word delete (Alt+Backspace)
+
+// Emoji combos
+const uint16_t PROGMEM combo_emoji_hands[] = {KC_T, KC_Y, COMBO_END}; // Raising hands emoji 🙌🏼
+const uint16_t PROGMEM combo_emoji_laugh[] = {KC_G, KC_H, COMBO_END}; // Laughing emoji 😂
+const uint16_t PROGMEM combo_emoji_heart[] = {KC_B, KC_N, COMBO_END}; // Heart emoji ❤️
+
+// Additional symbol combos
+const uint16_t PROGMEM combo_exclamation[] = {KC_Y, KC_U, COMBO_END}; // Exclamation mark !
+const uint16_t PROGMEM combo_ampersand[] = {KC_D, KC_K, COMBO_END}; // Ampersand &
+const uint16_t PROGMEM combo_dollar[] = {KC_S, KC_L, COMBO_END}; // Dollar sign $
+const uint16_t PROGMEM combo_hash[] = {KC_F, KC_G, COMBO_END}; // Hash symbol #
+const uint16_t PROGMEM combo_at[] = {KC_H, KC_J, COMBO_END}; // At symbol @
+const uint16_t PROGMEM combo_percent[] = {KC_V, KC_B, COMBO_END}; // Percent symbol %
+const uint16_t PROGMEM combo_caret[] = {KC_N, KC_M, COMBO_END}; // Caret symbol ^
+
+// Colemak-DH layout combos (same positions, different keys)
+const uint16_t PROGMEM combo_lparen_colemak[] = {KC_S, KC_T, COMBO_END}; // Left parenthesis ( (Colemak)
+const uint16_t PROGMEM combo_rparen_colemak[] = {KC_N, KC_E, COMBO_END}; // Right parenthesis ) (Colemak)
+const uint16_t PROGMEM combo_lbracket_colemak[] = {KC_F, KC_P, COMBO_END}; // Left bracket [ (Colemak)
+const uint16_t PROGMEM combo_rbracket_colemak[] = {KC_L, KC_U, COMBO_END}; // Right bracket ] (Colemak)
+const uint16_t PROGMEM combo_lbrace_colemak[] = {KC_C, KC_D, COMBO_END}; // Left brace { (Colemak)
+const uint16_t PROGMEM combo_rbrace_colemak[] = {KC_H, KC_COMM, COMBO_END}; // Right brace } (Colemak)
+const uint16_t PROGMEM combo_less_colemak[] = {KC_W, KC_F, COMBO_END}; // Less than < (Colemak)
+const uint16_t PROGMEM combo_greater_colemak[] = {KC_U, KC_Y, COMBO_END}; // Greater than > (Colemak)
+const uint16_t PROGMEM combo_tilde_colemak[] = {KC_A, KC_R, COMBO_END}; // Tilde ~ (Colemak)
+const uint16_t PROGMEM combo_grave_colemak[] = {KC_R, KC_S, COMBO_END}; // Grave ` (Colemak)
+const uint16_t PROGMEM combo_plus_colemak[] = {KC_P, KC_L, COMBO_END}; // Plus + (Colemak)
+const uint16_t PROGMEM combo_minus_colemak[] = {KC_D, KC_H, COMBO_END}; // Minus - (Colemak)
+const uint16_t PROGMEM combo_equal_colemak[] = {KC_T, KC_N, COMBO_END}; // Equal = (Colemak)
+const uint16_t PROGMEM combo_asterisk_colemak[] = {KC_F, KC_U, COMBO_END}; // Asterisk * (Colemak)
+const uint16_t PROGMEM combo_underscore_colemak[] = {KC_V, KC_K, COMBO_END}; // Underscore _ (Colemak)
+const uint16_t PROGMEM combo_emoji_hands_colemak[] = {KC_B, KC_J, COMBO_END}; // Raising hands emoji 🙌🏼 (Colemak)
+const uint16_t PROGMEM combo_emoji_laugh_colemak[] = {KC_G, KC_M, COMBO_END}; // Laughing emoji 😂 (Colemak)
+const uint16_t PROGMEM combo_emoji_heart_colemak[] = {KC_V, KC_K, COMBO_END}; // Heart emoji ❤️ (Colemak)
+const uint16_t PROGMEM combo_exclamation_colemak[] = {KC_J, KC_L, COMBO_END}; // Exclamation mark ! (Colemak)
+const uint16_t PROGMEM combo_ampersand_colemak[] = {KC_S, KC_E, COMBO_END}; // Ampersand & (Colemak)
+const uint16_t PROGMEM combo_dollar_colemak[] = {KC_R, KC_I, COMBO_END}; // Dollar sign $ (Colemak)
+const uint16_t PROGMEM combo_hash_colemak[] = {KC_T, KC_G, COMBO_END}; // Hash symbol # (Colemak)
+const uint16_t PROGMEM combo_at_colemak[] = {KC_M, KC_N, COMBO_END}; // At symbol @ (Colemak)
+const uint16_t PROGMEM combo_percent_colemak[] = {KC_D, KC_V, COMBO_END}; // Percent symbol % (Colemak)
+const uint16_t PROGMEM combo_caret_colemak[] = {KC_K, KC_H, COMBO_END}; // Caret symbol ^ (Colemak)
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BITWISE FUNCTION KEY INPUT IMPLEMENTATION
@@ -150,205 +186,142 @@ bool process_bitwise_f(uint16_t keycode, keyrecord_t *record) {
     return false; // Don't process this key normally
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// COMBO MAPPING DATA DEFINITIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-// Function declarations
-int8_t get_key_position_for_layout(uint16_t keycode, bool is_colemak);
-bool check_and_execute_combo(int8_t key_pos, bool* combo_keys);
-bool process_record_keymap(uint16_t keycode, keyrecord_t *record);
-
-// Physical position mappings (same positions across layouts)
-const combo_key_mapping_t combo_key_mappings[] = {
-    // Top row (positions 0-11)
-    {KC_Q,    KC_Q,    1},   // Q stays Q
-    {KC_W,    KC_W,    2},   // W stays W
-    {KC_E,    KC_F,    3},   // E -> F
-    {KC_R,    KC_P,    4},   // R -> P
-    {KC_T,    KC_B,    5},   // T -> B
-    {KC_Y,    KC_J,    6},   // Y -> J
-    {KC_U,    KC_L,    7},   // U -> L
-    {KC_I,    KC_U,    8},   // I -> U
-    {KC_O,    KC_Y,    9},   // O -> Y
-    {KC_P,    KC_SCLN, 10}, // P -> ; (SCLN)
-
-    // Home row (positions 12-23)
-    {KC_A,    KC_A,    13},  // A stays A
-    {KC_S,    KC_R,    14},  // S -> R
-    {KC_D,    KC_S,    15},  // D -> S
-    {KC_F,    KC_T,    16},  // F -> T
-    {KC_G,    KC_G,    17},  // G stays G
-    {KC_H,    KC_M,    18},  // H -> M
-    {KC_J,    KC_N,    19},  // J -> N
-    {KC_K,    KC_E,    20},  // K -> E
-    {KC_L,    KC_I,    21},  // L -> I
-    {KC_SCLN, KC_O,    22},  // ; -> O
-
-    // Bottom row (positions 24-35)
-    {KC_Z,    KC_Z,    25},  // Z stays Z
-    {KC_X,    KC_X,    26},  // X stays X
-    {KC_C,    KC_C,    27},  // C stays C
-    {KC_V,    KC_D,    28},  // V -> D
-    {KC_B,    KC_V,    29},  // B -> V
-    {KC_N,    KC_K,    30},  // N -> K
-    {KC_M,    KC_H,    31},  // M -> H
-    {KC_COMM, KC_COMM, 32},  // , stays ,
-    {KC_DOT,  KC_DOT,  33},  // . stays .
-    {KC_SLSH, KC_SLSH, 34},  // / stays /
-
-    // Number keys for combos (same across layouts)
-    {KC_4,    KC_4,    36},
-    {KC_5,    KC_5,    37},
+// Define the combo arrays for QMK native combo system
+combo_t key_combos[] = {
+    // QWERTY layout combos
+    COMBO(combo_lparen, LSFT(KC_9)),           // Left parenthesis (
+    COMBO(combo_rparen, LSFT(KC_0)),           // Right parenthesis )
+    COMBO(combo_lbracket, KC_LBRC),             // Left bracket [
+    COMBO(combo_rbracket, KC_RBRC),             // Right bracket ]
+    COMBO(combo_lbrace, LSFT(KC_LBRC)),         // Left brace {
+    COMBO(combo_rbrace, LSFT(KC_RBRC)),         // Right brace }
+    COMBO(combo_less, LSFT(KC_COMM)),           // Less than <
+    COMBO(combo_greater, LSFT(KC_DOT)),         // Greater than >
+    COMBO(combo_tilde, LSFT(KC_GRV)),           // Tilde ~
+    COMBO(combo_grave, KC_GRV),                 // Grave `
+    COMBO(combo_plus, LSFT(KC_EQL)),            // Plus +
+    COMBO(combo_minus, KC_MINS),                // Minus -
+    COMBO(combo_equal, KC_EQL),                 // Equal =
+    COMBO(combo_asterisk, LSFT(KC_8)),          // Asterisk *
+    COMBO(combo_underscore, LSFT(KC_MINS)),     // Underscore _
+    COMBO(combo_word_del, LALT(KC_BSPC)),       // Word delete (Alt+Backspace)
+    COMBO(combo_emoji_hands, EMOJI_HANDS),      // Raising hands emoji 🙌🏼
+    COMBO(combo_emoji_laugh, EMOJI_LAUGH),      // Laughing emoji 😂
+    COMBO(combo_emoji_heart, EMOJI_HEART),      // Heart emoji ❤️
+    COMBO(combo_exclamation, LSFT(KC_1)),       // Exclamation mark !
+    COMBO(combo_ampersand, LSFT(KC_7)),         // Ampersand &
+    COMBO(combo_dollar, LSFT(KC_4)),            // Dollar sign $
+    COMBO(combo_hash, LSFT(KC_3)),              // Hash symbol #
+    COMBO(combo_at, LSFT(KC_2)),                // At symbol @
+    COMBO(combo_percent, LSFT(KC_5)),           // Percent symbol %
+    COMBO(combo_caret, LSFT(KC_6)),             // Caret symbol ^
+    
+    // Colemak-DH layout combos (same outputs, different key combinations)
+    COMBO(combo_lparen_colemak, LSFT(KC_9)),           // Left parenthesis ( (Colemak)
+    COMBO(combo_rparen_colemak, LSFT(KC_0)),           // Right parenthesis ) (Colemak)
+    COMBO(combo_lbracket_colemak, KC_LBRC),             // Left bracket [ (Colemak)
+    COMBO(combo_rbracket_colemak, KC_RBRC),             // Right bracket ] (Colemak)
+    COMBO(combo_lbrace_colemak, LSFT(KC_LBRC)),         // Left brace { (Colemak)
+    COMBO(combo_rbrace_colemak, LSFT(KC_RBRC)),         // Right brace } (Colemak)
+    COMBO(combo_less_colemak, LSFT(KC_COMM)),           // Less than < (Colemak)
+    COMBO(combo_greater_colemak, LSFT(KC_DOT)),         // Greater than > (Colemak)
+    COMBO(combo_tilde_colemak, LSFT(KC_GRV)),           // Tilde ~ (Colemak)
+    COMBO(combo_grave_colemak, KC_GRV),                 // Grave ` (Colemak)
+    COMBO(combo_plus_colemak, LSFT(KC_EQL)),            // Plus + (Colemak)
+    COMBO(combo_minus_colemak, KC_MINS),                // Minus - (Colemak)
+    COMBO(combo_equal_colemak, KC_EQL),                 // Equal = (Colemak)
+    COMBO(combo_asterisk_colemak, LSFT(KC_8)),          // Asterisk * (Colemak)
+    COMBO(combo_underscore_colemak, LSFT(KC_MINS)),     // Underscore _ (Colemak)
+    COMBO(combo_emoji_hands_colemak, EMOJI_HANDS),      // Raising hands emoji 🙌🏼 (Colemak)
+    COMBO(combo_emoji_laugh_colemak, EMOJI_LAUGH),      // Laughing emoji 😂 (Colemak)
+    COMBO(combo_emoji_heart_colemak, EMOJI_HEART),      // Heart emoji ❤️ (Colemak)
+    COMBO(combo_exclamation_colemak, LSFT(KC_1)),       // Exclamation mark ! (Colemak)
+    COMBO(combo_ampersand_colemak, LSFT(KC_7)),         // Ampersand & (Colemak)
+    COMBO(combo_dollar_colemak, LSFT(KC_4)),            // Dollar sign $ (Colemak)
+    COMBO(combo_hash_colemak, LSFT(KC_3)),              // Hash symbol # (Colemak)
+    COMBO(combo_at_colemak, LSFT(KC_2)),                // At symbol @ (Colemak)
+    COMBO(combo_percent_colemak, LSFT(KC_5)),           // Percent symbol % (Colemak)
+    COMBO(combo_caret_colemak, LSFT(KC_6)),             // Caret symbol ^ (Colemak)
 };
 
-const int NUM_COMBO_MAPPINGS = sizeof(combo_key_mappings) / sizeof(combo_key_mapping_t);
+uint16_t COMBO_LEN = ARRAY_SIZE(key_combos);
 
-const combo_definition_t combo_definitions[] = {
-    // Parentheses
-    {15, 16, KC_9,    MOD_BIT(KC_LSFT), "Left parenthesis ("},   // D,F positions -> S,T in Colemak
-    {19, 20, KC_0,    MOD_BIT(KC_LSFT), "Right parenthesis )"},  // J,K positions -> N,E in Colemak
-
-    // Brackets
-    {3,  4,  KC_LBRC, 0,                "Left bracket ["},       // E,R positions -> F,P in Colemak
-    {7,  8,  KC_RBRC, 0,                "Right bracket ]"},      // U,I positions -> L,U in Colemak
-
-    // Braces
-    {27, 28, KC_LBRC, MOD_BIT(KC_LSFT), "Left brace {"},         // C,V positions -> C,D in Colemak
-    {31, 32, KC_RBRC, MOD_BIT(KC_LSFT), "Right brace }"},        // M,COMM positions -> H,COMM in Colemak
-
-    // Comparison operators
-    {2,  3,  KC_COMM, MOD_BIT(KC_LSFT), "Less than <"},          // W,E positions -> W,F in Colemak
-    {8,  9,  KC_DOT,  MOD_BIT(KC_LSFT), "Greater than >"},       // I,O positions -> U,Y in Colemak
-
-    // Special characters
-    {13, 14, KC_GRV,  MOD_BIT(KC_LSFT), "Tilde ~"},              // A,S positions -> A,R in Colemak
-    {14, 15, KC_GRV,  0,                "Grave `"},               // S,D positions -> R,S in Colemak
-
-    // Math operators
-    {4,  7,  KC_EQL,  MOD_BIT(KC_LSFT), "Plus +"},               // R,U positions -> P,L in Colemak
-    {28, 31, KC_MINS, 0,                "Minus -"},               // V,M positions -> D,H in Colemak
-    {16, 19, KC_EQL,  0,                "Equal ="},               // F,J positions -> T,N in Colemak
-    {3,  8,  KC_8,    MOD_BIT(KC_LSFT), "Asterisk *"},           // E,I positions -> F,U in Colemak
-
-    // Special functions
-    {36, 37, KC_BSPC, MOD_BIT(KC_LALT), "Word delete (Alt+Backspace)"}, // 4,5 on number layer
-
-    // New emoji and symbol mappings
-    {5,  6,  EMOJI_HANDS, 0,            "Raising hands emoji 🙌🏼"},      // T,Y positions -> B,J in Colemak
-    {17, 18, EMOJI_LAUGH, 0,            "Laughing emoji 😂"},             // G,H positions -> G,M in Colemak
-    {29, 30, EMOJI_HEART, 0,            "Heart emoji ❤️"},               // B,N positions -> V,K in Colemak
-    {6,  7,  KC_1,    MOD_BIT(KC_LSFT), "Exclamation mark !"},           // Y,U positions -> J,L in Colemak
-    {15, 20, KC_7,    MOD_BIT(KC_LSFT), "Ampersand &"},                  // D,K positions -> S,E in Colemak
-    {14, 21, KC_4,    MOD_BIT(KC_LSFT), "Dollar sign $"},                // S,L positions -> R,I in Colemak
-    {4,  5,  KC_MINS, MOD_BIT(KC_LSFT), "Underscore _"},                 // R,T positions -> P,B in Colemak
-    {16, 17, KC_3,    MOD_BIT(KC_LSFT), "Hash symbol #"},                // F,G positions -> T,G in Colemak
-    {18, 19, KC_2,    MOD_BIT(KC_LSFT), "At symbol @"},                  // H,J positions -> M,N in Colemak
-    {28, 29, KC_5,    MOD_BIT(KC_LSFT), "Percent symbol %"},             // V,B positions -> D,V in Colemak
-    {30, 31, KC_6,    MOD_BIT(KC_LSFT), "Caret symbol ^"},               // N,M positions -> K,H in Colemak
+// Combo indices for layout switching
+enum combo_indices {
+    // QWERTY layout combo indices (0-25)
+    COMBO_LPAREN = 0,
+    COMBO_RPAREN,
+    COMBO_LBRACKET,
+    COMBO_RBRACKET,
+    COMBO_LBRACE,
+    COMBO_RBRACE,
+    COMBO_LESS,
+    COMBO_GREATER,
+    COMBO_TILDE,
+    COMBO_GRAVE,
+    COMBO_PLUS,
+    COMBO_MINUS,
+    COMBO_EQUAL,
+    COMBO_ASTERISK,
+    COMBO_UNDERSCORE,
+    COMBO_WORD_DEL,
+    COMBO_EMOJI_HANDS,
+    COMBO_EMOJI_LAUGH,
+    COMBO_EMOJI_HEART,
+    COMBO_EXCLAMATION,
+    COMBO_AMPERSAND,
+    COMBO_DOLLAR,
+    COMBO_HASH,
+    COMBO_AT,
+    COMBO_PERCENT,
+    COMBO_CARET,
+    
+    // Colemak layout combo indices (26-51)
+    COMBO_LPAREN_COLEMAK,
+    COMBO_RPAREN_COLEMAK,
+    COMBO_LBRACKET_COLEMAK,
+    COMBO_RBRACKET_COLEMAK,
+    COMBO_LBRACE_COLEMAK,
+    COMBO_RBRACE_COLEMAK,
+    COMBO_LESS_COLEMAK,
+    COMBO_GREATER_COLEMAK,
+    COMBO_TILDE_COLEMAK,
+    COMBO_GRAVE_COLEMAK,
+    COMBO_PLUS_COLEMAK,
+    COMBO_MINUS_COLEMAK,
+    COMBO_EQUAL_COLEMAK,
+    COMBO_ASTERISK_COLEMAK,
+    COMBO_UNDERSCORE_COLEMAK,
+    COMBO_EMOJI_HANDS_COLEMAK,
+    COMBO_EMOJI_LAUGH_COLEMAK,
+    COMBO_EMOJI_HEART_COLEMAK,
+    COMBO_EXCLAMATION_COLEMAK,
+    COMBO_AMPERSAND_COLEMAK,
+    COMBO_DOLLAR_COLEMAK,
+    COMBO_HASH_COLEMAK,
+    COMBO_AT_COLEMAK,
+    COMBO_PERCENT_COLEMAK,
+    COMBO_CARET_COLEMAK,
+    
+    COMBO_COUNT
 };
 
-const int NUM_COMBO_DEFINITIONS = sizeof(combo_definitions) / sizeof(combo_definition_t);
+#define QWERTY_COMBO_START 0
+#define QWERTY_COMBO_END 25
+#define COLEMAK_COMBO_START 26
+#define COLEMAK_COMBO_END 51
 
-// Function implementations for combo system (data imported from combo_mappings.h)
-// Function to get key position based on current layout and keycode
-int8_t get_key_position_for_layout(uint16_t keycode, bool is_colemak) {
-    for (int i = 0; i < NUM_COMBO_MAPPINGS; i++) {
-        uint16_t target_keycode = is_colemak ? combo_key_mappings[i].colemak_keycode : combo_key_mappings[i].qwerty_keycode;
-        if (keycode == target_keycode) {
-            return combo_key_mappings[i].position;
-        }
+// Conditional combo triggering based on current layout
+bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
+    bool is_colemak = (get_highest_layer(default_layer_state) == _COLEMAK);
+    
+    if (is_colemak) {
+        // In Colemak mode, only allow Colemak combos
+        return (combo_index >= COLEMAK_COMBO_START && combo_index <= COLEMAK_COMBO_END);
+    } else {
+        // In QWERTY mode, only allow QWERTY combos
+        return (combo_index >= QWERTY_COMBO_START && combo_index <= QWERTY_COMBO_END);
     }
-    return -1; // Key not found in combo mappings
-}
-
-// Function to check and execute combos
-bool check_and_execute_combo(int8_t key_pos, bool* combo_keys) {
-    for (int i = 0; i < NUM_COMBO_DEFINITIONS; i++) {
-        const combo_definition_t* combo = &combo_definitions[i];
-
-        // Check if both positions for this combo are pressed
-        if ((key_pos == combo->pos1 || key_pos == combo->pos2) &&
-            combo_keys[combo->pos1] && combo_keys[combo->pos2]) {
-
-            // Execute the combo
-            // Handle custom keycodes specially
-            if (combo->output_keycode >= EMOJI_HANDS && combo->output_keycode <= SYMBOL_DOLLAR) {
-                // For custom keycodes, execute directly
-                switch (combo->output_keycode) {
-                    case EMOJI_HANDS:
-                        // Open emoji picker and type "raised hands"
-                        register_mods(MOD_LCTL | MOD_LGUI);
-                        register_code(KC_SPC);
-                        unregister_code(KC_SPC);
-                        unregister_mods(MOD_LCTL | MOD_LGUI);
-                        wait_ms(200);
-                        SEND_STRING("raised hands");
-                        wait_ms(50);
-                        tap_code(KC_ENT);
-                        break;
-                    case EMOJI_LAUGH:
-                        // Open emoji picker and type "joy"
-                        register_mods(MOD_LCTL | MOD_LGUI);
-                        register_code(KC_SPC);
-                        unregister_code(KC_SPC);
-                        unregister_mods(MOD_LCTL | MOD_LGUI);
-                        wait_ms(200);
-                        SEND_STRING("joy");
-                        wait_ms(50);
-                        tap_code(KC_ENT);
-                        break;
-                    case EMOJI_HEART:
-                        // Open emoji picker and type "heart"
-                        register_mods(MOD_LCTL | MOD_LGUI);
-                        register_code(KC_SPC);
-                        unregister_code(KC_SPC);
-                        unregister_mods(MOD_LCTL | MOD_LGUI);
-                        wait_ms(200);
-                        SEND_STRING("heart");
-                        wait_ms(50);
-                        tap_code(KC_ENT);
-                        break;
-                    case SYMBOL_EURO:
-                        // Use Option+Shift+2 for Euro symbol on macOS
-                        register_mods(MOD_LALT | MOD_LSFT);
-                        register_code(KC_2);
-                        unregister_code(KC_2);
-                        unregister_mods(MOD_LALT | MOD_LSFT);
-                        break;
-                    case SYMBOL_ARROW:
-                        SEND_STRING("=>");
-                        break;
-                    case SYMBOL_PERCENT:
-                        SEND_STRING("%");
-                        break;
-                    case SYMBOL_CARET:
-                        SEND_STRING("^");
-                        break;
-                    case SYMBOL_DOLLAR:
-                        SEND_STRING("$");
-                        break;
-                }
-            } else {
-                // For standard keycodes, use normal register/unregister
-                if (combo->modifier != 0) {
-                    register_mods(combo->modifier);
-                }
-                register_code(combo->output_keycode);
-                unregister_code(combo->output_keycode);
-                if (combo->modifier != 0) {
-                    unregister_mods(combo->modifier);
-                }
-            }
-
-            // Clear the combo keys
-            combo_keys[combo->pos1] = false;
-            combo_keys[combo->pos2] = false;
-
-            return true; // Combo was triggered
-        }
-    }
-    return false; // No combo triggered
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -499,6 +472,7 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                     // Currently COLEMAK (or anything else), switch to QWERTY
                     default_layer_set(1UL << _QWERTY);
                 }
+                // Note: combo_should_trigger will automatically handle the layout switch
             }
             return false;
         case SYMBOL_EURO:
@@ -528,6 +502,45 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
         case SYMBOL_DOLLAR:
             if (record->event.pressed) {
                 SEND_STRING("$");  // Dollar symbol
+            }
+            return false;
+        case EMOJI_HANDS:
+            if (record->event.pressed) {
+                // Open emoji picker and type "raised hands"
+                register_mods(MOD_LCTL | MOD_LGUI);
+                register_code(KC_SPC);
+                unregister_code(KC_SPC);
+                unregister_mods(MOD_LCTL | MOD_LGUI);
+                wait_ms(200);
+                SEND_STRING("raised hands");
+                wait_ms(50);
+                tap_code(KC_ENT);
+            }
+            return false;
+        case EMOJI_LAUGH:
+            if (record->event.pressed) {
+                // Open emoji picker and type "joy"
+                register_mods(MOD_LCTL | MOD_LGUI);
+                register_code(KC_SPC);
+                unregister_code(KC_SPC);
+                unregister_mods(MOD_LCTL | MOD_LGUI);
+                wait_ms(200);
+                SEND_STRING("joy");
+                wait_ms(50);
+                tap_code(KC_ENT);
+            }
+            return false;
+        case EMOJI_HEART:
+            if (record->event.pressed) {
+                // Open emoji picker and type "heart"
+                register_mods(MOD_LCTL | MOD_LGUI);
+                register_code(KC_SPC);
+                unregister_code(KC_SPC);
+                unregister_mods(MOD_LCTL | MOD_LGUI);
+                wait_ms(200);
+                SEND_STRING("heart");
+                wait_ms(50);
+                tap_code(KC_ENT);
             }
             return false;
         case CAPS_TOGGLE:
@@ -596,75 +609,7 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
         return false;  // Don't process the key further
     }
 
-    // Handle two-key combos for symbols (works on both QWERTY and COLEMAK)
-    // Use the new layout-aware combo system
-    bool is_colemak = (get_highest_layer(default_layer_state) == _COLEMAK);
-    int8_t key_pos = get_key_position_for_layout(keycode, is_colemak);
-
-    // Update combo key state if this is a combo-participating key
-    if (key_pos >= 0) {
-        combo_keys[key_pos] = record->event.pressed;
-
-        // Check if this is a combo key that needs delay processing
-        bool is_combo_key = (key_pos == 15 || key_pos == 16 ||  // D,F positions (S,T in Colemak)
-                             key_pos == 19 || key_pos == 20 ||  // J,K positions (N,E in Colemak)
-                             key_pos == 3 || key_pos == 4 ||    // E,R positions (F,P in Colemak)
-                             key_pos == 7 || key_pos == 8 ||    // U,I positions (L,U in Colemak)
-                             key_pos == 27 || key_pos == 28 ||  // C,V positions (C,D in Colemak)
-                             key_pos == 31 || key_pos == 32 ||  // M,COMM positions (H,COMM in Colemak)
-                             key_pos == 2 || key_pos == 3 ||    // W,E positions (W,F in Colemak)
-                             key_pos == 8 || key_pos == 9 ||    // I,O positions (U,Y in Colemak)
-                             key_pos == 13 || key_pos == 14 ||  // A,S positions (A,R in Colemak)
-                             key_pos == 14 || key_pos == 15 ||  // S,D positions (R,S in Colemak)
-                             key_pos == 4 || key_pos == 7 ||    // R,U positions (P,L in Colemak)
-                             key_pos == 5 || key_pos == 6 ||    // T,Y positions (B,J in Colemak) - EMOJI_HANDS
-                             key_pos == 17 || key_pos == 18 ||  // G,H positions (G,M in Colemak) - EMOJI_LAUGH
-                             key_pos == 29 || key_pos == 30 ||  // B,N positions (V,K in Colemak) - EMOJI_HEART
-                             key_pos == 28 || key_pos == 31 ||  // V,M positions (D,H in Colemak)
-                             key_pos == 16 || key_pos == 19 ||  // F,J positions (T,N in Colemak)
-                             key_pos == 29 || key_pos == 30 ||  // B,N positions (V,K in Colemak)
-                             key_pos == 36 || key_pos == 37 ||  // 4,5 (number layer)
-                             // New emoji and symbol combos
-                             key_pos == 5 || key_pos == 6 ||    // T,Y positions (B,J in Colemak)
-                             key_pos == 17 || key_pos == 18 ||  // G,H positions (G,M in Colemak)
-                             key_pos == 21);                    // L position (I in Colemak)
-
-        if (record->event.pressed && is_combo_key) {
-            // Check if combo is triggered immediately using the new system
-            if (check_and_execute_combo(key_pos, combo_keys)) {
-                pending_key.pending = false; // Cancel any pending key
-                return false; // Combo was triggered, don't process individually
-            }
-
-            // If no combo triggered and no pending key, start timer for this key
-            if (!pending_key.pending) {
-                pending_key.keycode = keycode;
-                pending_key.timer = timer_read();
-                pending_key.pending = true;
-                pending_key.key_pos = key_pos;
-                return false; // Don't process immediately
-            }
-
-            // If there's already a pending key, send both without combo
-            if (pending_key.pending) {
-                // Send the pending key first
-                tap_code(pending_key.keycode);
-                pending_key.pending = false;
-                // Then send current key normally
-                return true;
-            }
-        }
-
-        // Handle key release for combo keys
-        if (!record->event.pressed && is_combo_key) {
-            // If releasing a pending key without combo, send it
-            if (pending_key.pending && pending_key.keycode == keycode) {
-                tap_code(keycode);
-                pending_key.pending = false;
-                return false;
-            }
-        }
-    }
+    // Custom combo logic removed - now using QMK native combos
 
     return true;
 }
@@ -685,13 +630,7 @@ bool wpm_keycode_user(uint16_t keycode) {
 // Check mouse layer timeout regularly
 void matrix_scan_user(void) {
     // Handle mouse layer timeout (handled in matrix_scan_keymap and pointing_device_task_keymap)
-
-    // Handle pending combo key timeout
-    if (pending_key.pending && timer_elapsed(pending_key.timer) > COMBO_DELAY_MS) {
-        // Send the pending key as individual keypress
-        tap_code(pending_key.keycode);
-        pending_key.pending = false;
-    }
+    // Custom combo timeout logic removed - now using QMK native combos
 }
 
 void matrix_scan_keymap(void) {
@@ -721,3 +660,5 @@ report_mouse_t pointing_device_task_keymap(report_mouse_t mouse_report) {
 
     return mouse_report;
 }
+
+// No initialization needed - combo_should_trigger handles layout switching automatically

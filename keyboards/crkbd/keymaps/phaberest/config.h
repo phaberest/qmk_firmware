@@ -2,14 +2,17 @@
 
 #define MASTER_RIGHT
 
-// Configure the global tapping term (default: 200ms)
-#define TAPPING_TERM 180
+// Configure the global tapping term (default: 200ms) - increased for better reliability
+#define TAPPING_TERM 250
+
+// Require a short idle period before allowing hold-tap to activate
+#define QUICK_TAP_TERM 120  // Prevent accidental holds during fast typing
 
 // Enable rapid switch from tap to hold, disables double tap hold auto-repeat.
-#define TAPPING_FORCE_HOLD
+// #define TAPPING_FORCE_HOLD  // Disabled - can make typing feel less responsive
 
 // Apply the modifier on keys that are tapped during a short hold of a modtap
-#define PERMISSIVE_HOLD
+// #define PERMISSIVE_HOLD  // Disabled - can interfere with fast typing
 
 #define OLED_TIMEOUT 5000
 
@@ -17,11 +20,29 @@
 #define SPLIT_LAYER_STATE_ENABLE
 #define OLED_DRIVER_ENABLE
 
+// Split communication optimizations - DEBUGGING MODE
+#define SPLIT_MAX_CONNECTION_ERRORS 20  // Increase tolerance for debugging
+#define SPLIT_CONNECTION_CHECK_TIMEOUT 1000  // Increase timeout for debugging
+// #define SPLIT_TRANSPORT_MIRROR  // Disable mirroring for debugging
+
 // Auto mouse layer configuration
-#define AUTO_MOUSE_DEFAULT_LAYER 5
+#define AUTO_MOUSE_DEFAULT_LAYER 6
 #define AUTO_MOUSE_TIME 1000
 #define AUTO_MOUSE_DELAY 100
 #define AUTO_MOUSE_THRESHOLD 1
+
+// Combo configuration - Re-enabled with conservative settings for split debugging
+#define COMBO_TERM 200  // Much longer timeout to reduce interference with split communication
+#define COMBO_SHOULD_TRIGGER  // Enable combo conditional triggering
+
+// Additional optimizations for typing responsiveness
+#define DEBOUNCE 5  // Default is 5ms, ensure it's not higher
+#define USB_POLLING_INTERVAL_MS 1  // 1000Hz USB polling for responsiveness
+
+// Split pointing device optimizations - TEMPORARILY DISABLED FOR DEBUGGING
+// #define POINTING_DEVICE_TASK_THROTTLE_MS 8  // Throttle pointing device updates to reduce comm load
+// #define SPLIT_POINTING_ENABLE  // Ensure split pointing is enabled
+// #define POINTING_DEVICE_COMBINED  // Enable combined pointing device mode
 
 #define HK_MAIN_DEFAULT_POINTER_DEFAULT_MULTIPLIER 3.5
 #define HK_PERIPHERAL_DEFAULT_POINTER_DEFAULT_MULTIPLIER 1
