@@ -1,0 +1,113 @@
+layout:
+  qmk_keyboard: crkbd/rev1
+  layout_name: LAYOUT_split_3x6_3
+
+layers:
+  QWERTY:
+    - ['`', Q, W, E, R, T, Y, U, I, O, P, Bksp]
+    - [{h: MOUSE, t: Esc}, A, S, D, F, G, H, J, K, L, ';', "'"]
+    - [Shift, Z, X, C, V, B, N, M, ',', '.', '/', Shift]
+    - [Alt, {h: NAV, t: Tab}, {h: NUM, t: Space}, {h: Shift, t: Enter}, Gui, Ctrl]
+
+  COLEMAK:
+    - ['`', Q, W, F, P, B, J, L, U, Y, ';', Bksp]
+    - [{h: MOUSE, t: Esc}, A, R, S, T, G, M, N, E, I, O, "'"]
+    - [Shift, Z, X, C, D, V, K, H, ',', '.', '/', Shift]
+    - [Alt, {h: NAV, t: Tab}, {h: NUM, t: Space}, {h: Shift, t: Enter}, Gui, Ctrl]
+
+  NAV:
+    - [null, null, "Vol-", Mute, "Vol+", "Bri+", PrScr, ScrLk, Pause, null, null, null]
+    - [null, null, Prev, Play, Next, "Bri-", "Alt←", Left, Down, Up, Right, "Alt→"]
+    - [null, null, null, Copy, Paste, null, Ins, Home, PgDn, PgUp, End, null]
+    - [null, {type: held}, null, null, null, null]
+
+  NUM:
+    - [null, '%', '^', '€', '$', '=>', '-', '7', '8', '9', '=', null]
+    - [null, null, null, null, null, null, '+', '4', '5', '6', '*', null]
+    - [null, null, null, null, null, null, '=', '1', '2', '3', '/', null]
+    - [null, null, {type: held}, {h: FUN, t: Enter}, '0', null]
+
+  FUN:
+    - [null, null, null, null, null, null, null, null, null, null, null, "Toggle Layout"]
+    - [null, "F1 bit", "F2 bit", "F4 bit", "F8 bit", "F16 bit", null, null, null, null, null, null]
+    - [null, null, null, null, null, null, null, null, null, null, null, "Gaming"]
+    - [null, null, {type: held}, {type: held}, null, null]
+
+  GAMING:
+    - [Tab, Q, W, E, R, T, Y, U, I, O, P, Bksp]
+    - [Shift, A, S, D, F, G, H, J, K, L, ';', "'"]
+    - [Ctrl, Z, X, C, V, B, N, M, ',', '.', '/', "Exit Gaming"]
+    - [Alt, Esc, Space, Enter, Bksp, "Chat"]
+
+  MOUSE:
+    - ["HK Save", null, null, null, "Ms Snipe", "Ms Scroll", null, null, null, null, null, null]
+    - [{type: held}, null, null, null, null, null, null, "Ms ←", "Ms ↓", "Ms ↑", "Ms →", null]
+    - ["Reset KB", null, null, null, null, null, null, "Wh →", "Wh ↓", "Wh ↑", "Wh ←", null]
+    - [null, null, null, "Btn1", "Btn3", "Btn2"]
+
+combos:
+  # Parentheses
+  - {p: [15, 16], k: '(', l: ["QWERTY", "COLEMAK"]}
+  - {p: [19, 20], k: ')', l: ["QWERTY", "COLEMAK"]}
+
+  # Brackets
+  - {p: [3, 4], k: '[', l: ["QWERTY", "COLEMAK"]}
+  - {p: [7, 8], k: ']', l: ["QWERTY", "COLEMAK"]}
+
+  # Braces
+  - {p: [27, 28], k: '{', l: ["QWERTY", "COLEMAK"]}
+  - {p: [31, 32], k: '}', l: ["QWERTY", "COLEMAK"]}
+
+  # Comparison operators
+  - {p: [2, 3], k: '<', l: ["QWERTY", "COLEMAK"]}
+  - {p: [8, 9], k: '>', l: ["QWERTY", "COLEMAK"]}
+
+  # Special characters
+  - {p: [13, 14], k: '~', l: ["QWERTY", "COLEMAK"]}
+  - {p: [14, 15], k: '`', l: ["QWERTY", "COLEMAK"]}
+
+  # Math operators
+  - {p: [4, 7], k: '+', l: ["QWERTY", "COLEMAK"], a: 'bottom', offset: 0.2}
+  - {p: [28, 31], k: '-', l: ["QWERTY", "COLEMAK"], a: 'bottom', offset: 0.85}
+  - {p: [16, 19], k: '=', l: ["QWERTY", "COLEMAK"],
+    a: 'bottom', offset: 0
+  }
+  - {p: [3, 8], k: '*', l: ["QWERTY", "COLEMAK"], a: top, offset: 0.6}
+  - {p: [4, 5], k: '_', l: ["QWERTY", "COLEMAK"]}
+
+  # Emojis
+  - {p: [5, 6], k: '🙌🏼', l: ["QWERTY", "COLEMAK"], a: 'top', offset: 0.25}
+  - {p: [17, 18], k: '😂', l: ["QWERTY", "COLEMAK"], a: 'bottom', offset: 0.5}
+  - {p: [29, 30], k: '❤️', l: ["QWERTY", "COLEMAK"], a: 'bottom', offset: 1.3}
+
+  # Additional symbols
+  - {p: [6, 7], k: '!', l: ["QWERTY", "COLEMAK"]}
+  - {p: [15, 20], k: '&', l: ["QWERTY", "COLEMAK"], a: 'top', offset: 0.4}
+  - {p: [14, 21], k: '$', l: ["QWERTY", "COLEMAK"], a: 'bottom', offset: 1.25}
+  - {p: [16, 17], k: '#', l: ["QWERTY", "COLEMAK"]}
+  - {p: [18, 19], k: '@', l: ["QWERTY", "COLEMAK"]}
+  - {p: [28, 29], k: '%', l: ["QWERTY", "COLEMAK"]}
+  - {p: [30, 31], k: '^', l: ["QWERTY", "COLEMAK"]}
+
+  # Special functions
+  - {p: [19, 20], k: 'Word Del', l: ["NUM"]}
+  - {p: [24, 35], k: 'Caps', l: ["QWERTY", "COLEMAK"], a: 'bottom', offset: 1.8}
+
+draw_config:
+  key_w: 60.0
+  key_h: 56.0
+  split_gap: 30.0
+  combo_w: 28.0
+  combo_h: 26.0
+  key_rx: 6.0
+  key_ry: 6.0
+  n_columns: 1
+  n_rows: 4
+  col_net_w: 1.0
+  row_net_w: 1.0
+  combo_colors:
+    default: "#4FC3F7"
+    emoji: "#FF7043"
+    symbol: "#66BB6A"
+    bracket: "#9575CD"
+

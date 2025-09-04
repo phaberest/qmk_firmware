@@ -31,6 +31,9 @@ static bool left_shift_pressed = false;
 static bool right_shift_pressed = false;
 static bool caps_toggle_triggered = false;
 
+// Chat mode state tracking
+static bool chat_mode_active = false;
+
 #define KC_SLCK KC_SCROLL_LOCK
 
 #define RALT_X RALT_T(KC_X)
@@ -55,6 +58,9 @@ enum custom_keycodes {
     SYMBOL_PERCENT,  // %
     SYMBOL_CARET,    // ^
     SYMBOL_DOLLAR,   // $
+    TOGGLE_GAMING,   // Toggle gaming layer on
+    EXIT_GAMING,     // Exit gaming layer
+    CHAT_MODE,       // Temporary chat mode in gaming
 };
 
 // Two-key combo state tracking variables
@@ -355,7 +361,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         KC_GRV,   KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                         KC_Y,   KC_U,    KC_I,    KC_O,    KC_P,   KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,   KC_J,    KC_K,    KC_L,   KC_SCLN,  KC_QUOT,
+        LT(6, KC_ESC),  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,   KC_J,    KC_K,    KC_L,   KC_SCLN,  KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
        KC_LSFT,   KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,   KC_M,   KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -370,7 +376,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
         KC_GRV,   KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y,  KC_SCLN, KC_BSPC,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        KC_ESC,  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,   KC_O,   KC_QUOT,
+        LT(6, KC_ESC),  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,   KC_O,   KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
        KC_LSFT,   KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                         KC_K,    KC_H,  KC_COMM,  KC_DOT, KC_SLSH, KC_RSFT,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -419,8 +425,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, BIT_0,   BIT_1,   BIT_2,   BIT_3,   BIT_4,                        XXXXXXX,   XXXXXXX,   XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,   XXXXXXX,   XXXXXXX,   XXXXXXX, XXXXXXX, _______,
-    //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,   XXXXXXX,   XXXXXXX,   XXXXXXX, XXXXXXX, TOGGLE_GAMING,
+    //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,    _______, _______, _______
                                         //`--------------------------'  `--------------------------'
     ),
@@ -434,9 +440,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         KC_LSFT,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                         KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, KC_QUOT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        KC_LCTL,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH, _______,
+        KC_LCTL,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH, EXIT_GAMING,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                            KC_LALT,  KC_ESC,  KC_SPC,     KC_ENT, KC_BSPC, KC_CAPS
+                                            KC_LALT,  KC_ESC,  KC_SPC,     KC_ENT, KC_BSPC, CHAT_MODE
                                         //`--------------------------'  `--------------------------'
     ),
 
@@ -529,6 +535,40 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                 tap_code(KC_CAPS);  // Toggle caps lock
             }
             return false;
+        case TOGGLE_GAMING:
+            if (record->event.pressed) {
+                layer_on(_GAME);  // Turn on gaming layer
+            }
+            return false;
+        case EXIT_GAMING:
+            if (record->event.pressed) {
+                layer_off(_GAME);  // Turn off gaming layer
+                chat_mode_active = false;  // Reset chat mode when exiting gaming
+            }
+            return false;
+        case CHAT_MODE:
+            if (record->event.pressed) {
+                chat_mode_active = true;
+                // Switch to base layer temporarily (QWERTY or COLEMAK based on default)
+                if (get_highest_layer(default_layer_state) == _COLEMAK) {
+                    layer_on(_COLEMAK);
+                } else {
+                    layer_on(_QWERTY);
+                }
+                layer_off(_GAME);  // Turn off gaming layer temporarily
+            }
+            return false;
+    }
+
+    // Handle Enter key in chat mode - return to gaming
+    if (keycode == KC_ENT && chat_mode_active && record->event.pressed) {
+        chat_mode_active = false;
+        // Turn off base layers and return to gaming
+        layer_off(_QWERTY);
+        layer_off(_COLEMAK);
+        layer_on(_GAME);
+        // Let the Enter key press through
+        return true;
     }
 
     // Handle shift key tracking for caps lock toggle
