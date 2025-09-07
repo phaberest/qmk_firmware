@@ -223,8 +223,10 @@ bool oled_task_user(void) {
         oled_write_P(PSTR("     "), false); // Clear the line
         oled_set_cursor(0, 12);
 
-        // Show layout name based on default layer - use short names with 2 spaces before
-        if (get_highest_layer(default_layer_state) == 0) {
+        // Show layout name based on current layer - use short names with 2 spaces before
+        if (get_highest_layer(layer_state) == 5) {  // Gaming layer
+            oled_write_P(PSTR("  G"), false);     // GAMING with 2 spaces
+        } else if (get_highest_layer(default_layer_state) == 0) {
             oled_write_P(PSTR("  Q"), false);     // QWERTY with 2 spaces
         } else {
             oled_write_P(PSTR("  C"), false);     // COLEMAK with 2 spaces

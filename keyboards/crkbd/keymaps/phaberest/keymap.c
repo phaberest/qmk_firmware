@@ -435,7 +435,25 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // Handle bitwise function key input first
+    // Handle Enter key in chat mode first - return to gaming
+    // Only exit chat mode on regular Enter or when mod-tap is tapped (not held for shift)
+    if (chat_mode_active && record->event.pressed) {
+        if (keycode == KC_ENT) {
+            // Regular Enter key
+            chat_mode_active = false;
+            layer_clear();
+            layer_on(_GAME);
+            return true;
+        } else if (keycode == MT(MOD_LSFT, KC_ENT) && record->tap.count > 0) {
+            // Mod-tap Enter key was tapped (not held for shift)
+            chat_mode_active = false;
+            layer_clear();
+            layer_on(_GAME);
+            return true;
+        }
+    }
+
+    // Handle bitwise function key input
     if (!process_bitwise_f(keycode, record)) {
         return false;
     }
@@ -546,26 +564,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case CHAT_MODE:
             if (record->event.pressed) {
                 chat_mode_active = true;
-                // Switch to base layer temporarily (QWERTY or COLEMAK based on default)
+                // Turn off gaming layer and switch to base layer
+                layer_off(_GAME);
+                // Activate the appropriate base layer based on default
                 if (get_highest_layer(default_layer_state) == _COLEMAK) {
                     layer_on(_COLEMAK);
                 } else {
                     layer_on(_QWERTY);
                 }
-                layer_off(_GAME);  // Turn off gaming layer temporarily
             }
             return false;
-    }
-
-    // Handle Enter key in chat mode - return to gaming
-    if (keycode == KC_ENT && chat_mode_active && record->event.pressed) {
-        chat_mode_active = false;
-        // Turn off base layers and return to gaming
-        layer_off(_QWERTY);
-        layer_off(_COLEMAK);
-        layer_on(_GAME);
-        // Let the Enter key press through
-        return true;
     }
 
     // Handle shift key tracking for caps lock toggle
