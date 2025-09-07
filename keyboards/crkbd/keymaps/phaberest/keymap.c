@@ -1,6 +1,5 @@
 #include QMK_KEYBOARD_H
 #include "enums.h"
-#include "users/phaberest/holykeebs.h"
 
 // Tap dance state for ESC/TAB/FN layer
 
@@ -76,7 +75,7 @@ const uint16_t PROGMEM combo_plus[] = {KC_R, KC_U, COMBO_END}; // Plus +
 const uint16_t PROGMEM combo_minus[] = {KC_V, KC_M, COMBO_END}; // Minus -
 const uint16_t PROGMEM combo_equal[] = {KC_F, KC_J, COMBO_END}; // Equal =
 const uint16_t PROGMEM combo_asterisk[] = {KC_E, KC_I, COMBO_END}; // Asterisk *
-const uint16_t PROGMEM combo_underscore[] = {KC_B, KC_N, COMBO_END}; // Underscore _
+const uint16_t PROGMEM combo_underscore[] = {KC_R, KC_T, COMBO_END}; // Underscore _
 
 // Special functions
 const uint16_t PROGMEM combo_word_del[] = {KC_4, KC_5, COMBO_END}; // Word delete (Alt+Backspace)
@@ -110,10 +109,10 @@ const uint16_t PROGMEM combo_plus_colemak[] = {KC_P, KC_L, COMBO_END}; // Plus +
 const uint16_t PROGMEM combo_minus_colemak[] = {KC_D, KC_H, COMBO_END}; // Minus - (Colemak)
 const uint16_t PROGMEM combo_equal_colemak[] = {KC_T, KC_N, COMBO_END}; // Equal = (Colemak)
 const uint16_t PROGMEM combo_asterisk_colemak[] = {KC_F, KC_U, COMBO_END}; // Asterisk * (Colemak)
-const uint16_t PROGMEM combo_underscore_colemak[] = {KC_V, KC_K, COMBO_END}; // Underscore _ (Colemak)
+const uint16_t PROGMEM combo_underscore_colemak[] = {KC_P, KC_B, COMBO_END}; // Underscore _ (Colemak) - R+T equivalent
 const uint16_t PROGMEM combo_emoji_hands_colemak[] = {KC_B, KC_J, COMBO_END}; // Raising hands emoji 🙌🏼 (Colemak)
 const uint16_t PROGMEM combo_emoji_laugh_colemak[] = {KC_G, KC_M, COMBO_END}; // Laughing emoji 😂 (Colemak)
-const uint16_t PROGMEM combo_emoji_heart_colemak[] = {KC_V, KC_K, COMBO_END}; // Heart emoji ❤️ (Colemak)
+const uint16_t PROGMEM combo_emoji_heart_colemak[] = {KC_V, KC_K, COMBO_END}; // Heart emoji ❤️ (Colemak) - B+N equivalent
 const uint16_t PROGMEM combo_exclamation_colemak[] = {KC_J, KC_L, COMBO_END}; // Exclamation mark ! (Colemak)
 const uint16_t PROGMEM combo_ampersand_colemak[] = {KC_S, KC_E, COMBO_END}; // Ampersand & (Colemak)
 const uint16_t PROGMEM combo_dollar_colemak[] = {KC_R, KC_I, COMBO_END}; // Dollar sign $ (Colemak)
@@ -424,7 +423,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
     [6] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        HK_SAVE, XXXXXXX, XXXXXXX, XXXXXXX, HK_S_MODE, HK_D_MODE,                 XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                 XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -435,28 +434,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 };
 
-bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Handle bitwise function key input first
     if (!process_bitwise_f(keycode, record)) {
         return false;
     }
 
     switch (keycode) {
-        case KC_ESC:
-            // Detect the activation of only Left Alt
-            if ((get_mods() & MOD_BIT(KC_LALT)) == MOD_BIT(KC_LALT)) {
-                if (record->event.pressed) {
-                    // No need to register KC_LALT because it's already active.
-                    // The Alt modifier will apply on this KC_TAB.
-                    register_code(KC_TAB);
-                } else {
-                    unregister_code(KC_TAB);
-                }
-                // Do not let QMK process the keycode further
-                return false;
-            }
-            // Else, let QMK process the KC_ESC keycode as usual
-            return true;
         case RESET_KBD:
             if (record->event.pressed) {
                 soft_reset_keyboard();
@@ -629,19 +613,14 @@ bool wpm_keycode_user(uint16_t keycode) {
 
 // Check mouse layer timeout regularly
 void matrix_scan_user(void) {
-    // Handle mouse layer timeout (handled in matrix_scan_keymap and pointing_device_task_keymap)
-    // Custom combo timeout logic removed - now using QMK native combos
-}
-
-void matrix_scan_keymap(void) {
     if (mouse_layer_active && timer_elapsed32(mouse_timer) > MOUSE_LAYER_TIMEOUT) {
         layer_off(_MOUSE);
         mouse_layer_active = false;
     }
 }
 
-// This function is called by the holykeebs user code
-report_mouse_t pointing_device_task_keymap(report_mouse_t mouse_report) {
+// Mouse handling function
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     // Check if mouse movement is detected
     if (mouse_report.x != 0 || mouse_report.y != 0) {
         // Activate mouse layer and reset timer

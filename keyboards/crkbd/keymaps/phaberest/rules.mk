@@ -1,9 +1,8 @@
-# EXTRAKEY_ENABLE 	= no
-# VIA_ENABLE          = no
+EXTRAKEY_ENABLE = yes
+MOUSEKEY_ENABLE = yes
 TAP_DANCE_ENABLE = no
-COMBO_ENABLE = yes  # Re-enabled to avoid build errors
+COMBO_ENABLE = yes
 OLED_ENABLE = yes
 OLED_DRIVER = SSD1306
-# SPLIT_KEYBOARD 		= yes
-#
-# WPM_ENABLE 			= yes
+WPM_ENABLE = yes
+SPLIT_KEYBOARD = yes
