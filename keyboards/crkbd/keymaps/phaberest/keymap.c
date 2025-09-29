@@ -1,6 +1,18 @@
 #include QMK_KEYBOARD_H
 #include "enums.h"
 
+// EEPROM user data structure for persistent settings
+typedef union {
+    uint32_t raw;
+    struct {
+        uint8_t default_layer :8;  // Store default layer (0=QWERTY, 1=COLEMAK)
+        uint8_t version      :8;   // Version for future compatibility
+        uint16_t reserved    :16;  // Reserved for future use
+    };
+} user_config_t;
+
+user_config_t user_config;
+
 // Tap dance state for ESC/TAB/FN layer
 
 #define XXXXXXX KC_NO
@@ -324,6 +336,48 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// EEPROM USER DATA MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Initialize user EEPROM data
+void eeconfig_init_user(void) {
+    user_config.raw = 0;
+    user_config.default_layer = _QWERTY;  // Default to QWERTY
+    user_config.version = EECONFIG_USER_DATA_VERSION;
+    eeconfig_update_user_datablock(&user_config, 0, sizeof(user_config));
+    default_layer_set(1UL << _QWERTY);
+}
+
+// Load user configuration from EEPROM
+void load_user_config(void) {
+    // Read user data from EEPROM datablock
+    eeconfig_read_user_datablock(&user_config, 0, sizeof(user_config));
+    
+    // Check if we have valid data (version matches and datablock is valid)
+    if (!eeconfig_is_user_datablock_valid() || user_config.version != EECONFIG_USER_DATA_VERSION) {
+        // Invalid or uninitialized data, reset to defaults
+        eeconfig_init_user();
+        return;
+    }
+    
+    // Restore the saved default layer
+    if (user_config.default_layer == _COLEMAK) {
+        default_layer_set(1UL << _COLEMAK);
+    } else {
+        default_layer_set(1UL << _QWERTY);
+    }
+}
+
+// Save current default layer to EEPROM
+void save_default_layer(void) {
+    uint8_t current_layer = get_highest_layer(default_layer_state);
+    if (current_layer != user_config.default_layer) {
+        user_config.default_layer = current_layer;
+        eeconfig_update_user_datablock(&user_config, 0, sizeof(user_config));
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
@@ -474,6 +528,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     // Currently COLEMAK (or anything else), switch to QWERTY
                     default_layer_set(1UL << _QWERTY);
                 }
+                // Save the new layer preference to EEPROM
+                save_default_layer();
                 // Note: combo_should_trigger will automatically handle the layout switch
             }
             return false;
@@ -648,4 +704,8 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
     return mouse_report;
 }
 
-// No initialization needed - combo_should_trigger handles layout switching automatically
+// Initialize keyboard and load saved layer preference
+void keyboard_post_init_user(void) {
+    // Load saved layer preference from EEPROM
+    load_user_config();
+}

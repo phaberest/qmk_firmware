@@ -41,6 +41,10 @@
 #define DEBOUNCE 5  // Default is 5ms, ensure it's not higher
 #define USB_POLLING_INTERVAL_MS 1  // 1000Hz USB polling for responsiveness
 
+// EEPROM configuration for persistent layer storage
+// EECONFIG_USER_DATA_SIZE is defined in users/phaberest/config.h (64 bytes)
+#define EECONFIG_USER_DATA_VERSION 1  // Version for user data format
+
 // Split pointing device optimizations - TEMPORARILY DISABLED FOR DEBUGGING
 // #define POINTING_DEVICE_TASK_THROTTLE_MS 8  // Throttle pointing device updates to reduce comm load
 // #define SPLIT_POINTING_ENABLE  // Ensure split pointing is enabled
