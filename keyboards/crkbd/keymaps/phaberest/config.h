@@ -32,7 +32,7 @@
 #define AUTO_MOUSE_THRESHOLD 1
 
 // Combo configuration - Re-enabled with conservative settings for split debugging
-#define COMBO_TERM 75
+#define COMBO_TERM 50
 #define COMBO_SHOULD_TRIGGER  // Enable combo conditional triggering
 #define COMBO_MUST_HOLD_MODS  // Require modifiers to be held during combo detection
 #define COMBO_MUST_TAP_PER_COMBO  // Require all keys to be tapped within the combo term
