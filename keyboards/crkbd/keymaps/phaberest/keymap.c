@@ -112,6 +112,8 @@ const uint16_t PROGMEM combo_hash[] = {KC_F, KC_G, COMBO_END}; // Hash symbol #
 const uint16_t PROGMEM combo_at[] = {KC_H, KC_J, COMBO_END}; // At symbol @
 const uint16_t PROGMEM combo_percent[] = {KC_V, KC_B, COMBO_END}; // Percent symbol %
 const uint16_t PROGMEM combo_caret[] = {KC_N, KC_M, COMBO_END}; // Caret symbol ^
+const uint16_t PROGMEM combo_backslash[] = {KC_K, KC_L, COMBO_END}; // Backslash
+const uint16_t PROGMEM combo_pipe[] = {KC_L, KC_SCLN, COMBO_END}; // Pipe |
 
 // Colemak-DH layout combos (same positions, different keys)
 const uint16_t PROGMEM combo_lparen_colemak[] = {KC_S, KC_T, COMBO_END}; // Left parenthesis ( (Colemak)
@@ -139,6 +141,8 @@ const uint16_t PROGMEM combo_hash_colemak[] = {KC_T, KC_G, COMBO_END}; // Hash s
 const uint16_t PROGMEM combo_at_colemak[] = {KC_M, KC_N, COMBO_END}; // At symbol @ (Colemak)
 const uint16_t PROGMEM combo_percent_colemak[] = {KC_D, KC_V, COMBO_END}; // Percent symbol % (Colemak)
 const uint16_t PROGMEM combo_caret_colemak[] = {KC_K, KC_H, COMBO_END}; // Caret symbol ^ (Colemak)
+const uint16_t PROGMEM combo_backslash_colemak[] = {KC_E, KC_I, COMBO_END}; // Backslash (Colemak)
+const uint16_t PROGMEM combo_pipe_colemak[] = {KC_I, KC_O, COMBO_END}; // Pipe | (Colemak)
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BITWISE FUNCTION KEY INPUT IMPLEMENTATION
@@ -233,6 +237,8 @@ combo_t key_combos[] = {
     COMBO(combo_at, LSFT(KC_2)),                // At symbol @
     COMBO(combo_percent, LSFT(KC_5)),           // Percent symbol %
     COMBO(combo_caret, LSFT(KC_6)),             // Caret symbol ^
+    COMBO(combo_backslash, KC_BSLS),            // Backslash
+    COMBO(combo_pipe, LSFT(KC_BSLS)),           // Pipe |
 
     // Colemak-DH layout combos (same outputs, different key combinations)
     COMBO(combo_lparen_colemak, LSFT(KC_9)),           // Left parenthesis ( (Colemak)
@@ -260,6 +266,8 @@ combo_t key_combos[] = {
     COMBO(combo_at_colemak, LSFT(KC_2)),                // At symbol @ (Colemak)
     COMBO(combo_percent_colemak, LSFT(KC_5)),           // Percent symbol % (Colemak)
     COMBO(combo_caret_colemak, LSFT(KC_6)),             // Caret symbol ^ (Colemak)
+    COMBO(combo_backslash_colemak, KC_BSLS),            // Backslash (Colemak)
+    COMBO(combo_pipe_colemak, LSFT(KC_BSLS)),           // Pipe | (Colemak)
 };
 
 uint16_t COMBO_LEN = ARRAY_SIZE(key_combos);
@@ -293,8 +301,10 @@ enum combo_indices {
     COMBO_AT,
     COMBO_PERCENT,
     COMBO_CARET,
+    COMBO_BACKSLASH,
+    COMBO_PIPE,
 
-    // Colemak layout combo indices (26-51)
+    // Colemak layout combo indices (28-55)
     COMBO_LPAREN_COLEMAK,
     COMBO_RPAREN_COLEMAK,
     COMBO_LBRACKET_COLEMAK,
@@ -320,14 +330,16 @@ enum combo_indices {
     COMBO_AT_COLEMAK,
     COMBO_PERCENT_COLEMAK,
     COMBO_CARET_COLEMAK,
+    COMBO_BACKSLASH_COLEMAK,
+    COMBO_PIPE_COLEMAK,
 
     COMBO_COUNT
 };
 
 #define QWERTY_COMBO_START 0
-#define QWERTY_COMBO_END 25
-#define COLEMAK_COMBO_START 26
-#define COLEMAK_COMBO_END 51
+#define QWERTY_COMBO_END 27
+#define COLEMAK_COMBO_START 28
+#define COLEMAK_COMBO_END 55
 
 // Conditional combo triggering based on current layout
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {

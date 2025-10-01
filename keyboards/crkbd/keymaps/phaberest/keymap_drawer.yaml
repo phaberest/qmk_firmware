@@ -88,6 +88,8 @@ combos:
   - {p: [18, 19], k: '@', l: ["QWERTY", "COLEMAK"]}
   - {p: [28, 29], k: '%', l: ["QWERTY", "COLEMAK"]}
   - {p: [30, 31], k: '^', l: ["QWERTY", "COLEMAK"]}
+  - {p: [20, 21], k: '\', l: ["QWERTY", "COLEMAK"]}
+  - {p: [21, 22], k: '|', l: ["QWERTY", "COLEMAK"]}
 
   # Special functions
   - {p: [19, 20], k: 'Word Del', l: ["NUM"]}
