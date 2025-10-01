@@ -181,6 +181,8 @@ The most unique feature - use binary combinations on the left home row:
 - Press both shift keys simultaneously to toggle Caps Lock
 - Visual feedback on OLED display
 
+_I also enabled caps word when double tapping on left shift. 🙌🏼_
+
 ## 🔧 Configuration
 
 ### Hardware Setup

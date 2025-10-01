@@ -36,6 +36,7 @@
 #define COMBO_SHOULD_TRIGGER  // Enable combo conditional triggering
 #define COMBO_MUST_HOLD_MODS  // Require modifiers to be held during combo detection
 #define COMBO_MUST_TAP_PER_COMBO  // Require all keys to be tapped within the combo term
+#define DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD // Double tap on shift = caps till space pressed
 
 // Additional optimizations for typing responsiveness
 #define DEBOUNCE 5  // Default is 5ms, ensure it's not higher
