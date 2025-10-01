@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
 #include "enums.h"
+#include "os_detection.h"
 
 // EEPROM user data structure for persistent settings
 typedef union {
@@ -12,6 +13,9 @@ typedef union {
 } user_config_t;
 
 user_config_t user_config;
+
+// OS detection state
+static bool isApple = false;
 
 // Tap dance state for ESC/TAB/FN layer
 
@@ -57,6 +61,9 @@ enum custom_keycodes {
     TOGGLE_GAMING,   // Toggle gaming layer on
     EXIT_GAMING,     // Exit gaming layer
     CHAT_MODE,       // Temporary chat mode in gaming
+    // OS-aware copy/paste
+    OS_COPY,  // OS-aware copy
+    OS_PASTE, // OS-aware paste
 };
 
 // QMK Native Combo Definitions
@@ -226,7 +233,7 @@ combo_t key_combos[] = {
     COMBO(combo_at, LSFT(KC_2)),                // At symbol @
     COMBO(combo_percent, LSFT(KC_5)),           // Percent symbol %
     COMBO(combo_caret, LSFT(KC_6)),             // Caret symbol ^
-    
+
     // Colemak-DH layout combos (same outputs, different key combinations)
     COMBO(combo_lparen_colemak, LSFT(KC_9)),           // Left parenthesis ( (Colemak)
     COMBO(combo_rparen_colemak, LSFT(KC_0)),           // Right parenthesis ) (Colemak)
@@ -286,7 +293,7 @@ enum combo_indices {
     COMBO_AT,
     COMBO_PERCENT,
     COMBO_CARET,
-    
+
     // Colemak layout combo indices (26-51)
     COMBO_LPAREN_COLEMAK,
     COMBO_RPAREN_COLEMAK,
@@ -313,7 +320,7 @@ enum combo_indices {
     COMBO_AT_COLEMAK,
     COMBO_PERCENT_COLEMAK,
     COMBO_CARET_COLEMAK,
-    
+
     COMBO_COUNT
 };
 
@@ -325,7 +332,7 @@ enum combo_indices {
 // Conditional combo triggering based on current layout
 bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode, keyrecord_t *record) {
     bool is_colemak = (get_highest_layer(default_layer_state) == _COLEMAK);
-    
+
     if (is_colemak) {
         // In Colemak mode, only allow Colemak combos
         return (combo_index >= COLEMAK_COMBO_START && combo_index <= COLEMAK_COMBO_END);
@@ -352,14 +359,14 @@ void eeconfig_init_user(void) {
 void load_user_config(void) {
     // Read user data from EEPROM datablock
     eeconfig_read_user_datablock(&user_config, 0, sizeof(user_config));
-    
+
     // Check if we have valid data (version matches and datablock is valid)
     if (!eeconfig_is_user_datablock_valid() || user_config.version != EECONFIG_USER_DATA_VERSION) {
         // Invalid or uninitialized data, reset to defaults
         eeconfig_init_user();
         return;
     }
-    
+
     // Restore the saved default layer
     if (user_config.default_layer == _COLEMAK) {
         default_layer_set(1UL << _COLEMAK);
@@ -419,7 +426,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, XXXXXXX, KC_MPRV, KC_MPLY, KC_MNXT, KC_BRID,                      LALT(KC_LEFT), KC_LEFT, KC_DOWN,  KC_UP,  KC_RGHT, LALT(KC_RGHT),
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, XXXXXXX, XXXXXXX, KC_COPY, KC_PASTE, XXXXXXX,                      KC_INS, KC_HOME, KC_PGDN, KC_PGUP,  KC_END, _______,
+        _______, XXXXXXX, XXXXXXX, OS_COPY, KC_PASTE, XXXXXXX,                      KC_INS, KC_HOME, KC_PGDN, KC_PGUP,  KC_END, _______,
     //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,   _______, _______, _______
                                         //`--------------------------'  `--------------------------'
@@ -630,6 +637,40 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return false;
+        case OS_COPY:
+            if (record->event.pressed) {
+                if (isApple) {
+                    // Use Cmd+C for Apple devices
+                    register_mods(MOD_LGUI);
+                    register_code(KC_C);
+                    unregister_code(KC_C);
+                    unregister_mods(MOD_LGUI);
+                } else {
+                    // Use Ctrl+C for other devices
+                    register_mods(MOD_LCTL);
+                    register_code(KC_C);
+                    unregister_code(KC_C);
+                    unregister_mods(MOD_LCTL);
+                }
+            }
+            return false;
+        case OS_PASTE:
+            if (record->event.pressed) {
+                if (isApple) {
+                    // Use Cmd+V for Apple devices
+                    register_mods(MOD_LGUI);
+                    register_code(KC_V);
+                    unregister_code(KC_V);
+                    unregister_mods(MOD_LGUI);
+                } else {
+                    // Use Ctrl+V for other devices
+                    register_mods(MOD_LCTL);
+                    register_code(KC_V);
+                    unregister_code(KC_V);
+                    unregister_mods(MOD_LCTL);
+                }
+            }
+            return false;
     }
 
     // Handle shift key tracking for caps lock toggle
@@ -708,4 +749,21 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
 void keyboard_post_init_user(void) {
     // Load saved layer preference from EEPROM
     load_user_config();
+}
+
+// OS detection callback - update isApple when OS is detected
+bool process_detected_host_os_user(os_variant_t detected_os) {
+    switch (detected_os) {
+        case OS_MACOS:
+        case OS_IOS:
+            isApple = true;
+            break;
+        case OS_LINUX:
+        case OS_WINDOWS:
+        case OS_UNSURE:
+        default:
+            isApple = false;
+            break;
+    }
+    return true;
 }
