@@ -28,9 +28,9 @@ layers:
     - [null, null, {type: held}, {h: FUN, t: Enter}, '0', null]
 
   FUN:
-    - [null, null, null, null, null, null, null, null, null, null, null, "Toggle Layout"]
-    - [null, "F1 bit", "F2 bit", "F4 bit", "F8 bit", "F16 bit", null, null, null, null, null, null]
-    - [null, null, null, null, null, null, null, null, null, null, null, "Gaming"]
+    - [null, null, null, null, null, null, null, "Capture Desktop", null, null, null, "Toggle Layout"]
+    - [null, "F1 bit", "F2 bit", "F4 bit", "F8 bit", "F16 bit", null, "Capture Area", null, null, null, null]
+    - [null, null, null, null, null, null, null, "Record Screen", null, null, null, "Gaming"]
     - [null, null, {type: held}, {type: held}, null, null]
 
   GAMING:

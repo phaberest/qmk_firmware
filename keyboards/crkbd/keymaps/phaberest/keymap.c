@@ -64,6 +64,10 @@ enum custom_keycodes {
     // OS-aware copy/paste
     OS_COPY,  // OS-aware copy
     OS_PASTE, // OS-aware paste
+    // Screenshot and screen recording
+    CAP_AREA,    // Cmd+Ctrl+Shift+4 - Capture area
+    CAP_DESK, // Cmd+Ctrl+Shift+3 - Capture desktop
+    REC_SCRN,   // Cmd+Shift+5 - Record screen
 };
 
 // QMK Native Combo Definitions
@@ -466,11 +470,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Example: A+D = 1+4 = 5 = F5, S+F = 2+8 = 10 = F10, etc.
     [4] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,   XXXXXXX,   XXXXXXX,   XXXXXXX, XXXXXXX, TOGGLE_LAYOUT,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                     XXXXXXX, CAP_DESK, XXXXXXX, XXXXXXX, XXXXXXX, TOGGLE_LAYOUT,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, BIT_0,   BIT_1,   BIT_2,   BIT_3,   BIT_4,                        XXXXXXX,   XXXXXXX,   XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
+        _______, BIT_0,   BIT_1,   BIT_2,   BIT_3,   BIT_4,                       XXXXXXX, CAP_AREA, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,   XXXXXXX,   XXXXXXX,   XXXXXXX, XXXXXXX, TOGGLE_GAMING,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                     XXXXXXX, REC_SCRN, XXXXXXX, XXXXXXX, XXXXXXX, TOGGLE_GAMING,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,    _______, _______, _______
                                         //`--------------------------'  `--------------------------'
@@ -681,6 +685,33 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     unregister_code(KC_V);
                     unregister_mods(MOD_LCTL);
                 }
+            }
+            return false;
+        case CAP_AREA:
+            if (record->event.pressed) {
+                // Cmd+Ctrl+Shift+4 for area capture
+                register_mods(MOD_LGUI | MOD_LCTL | MOD_LSFT);
+                register_code(KC_4);
+                unregister_code(KC_4);
+                unregister_mods(MOD_LGUI | MOD_LCTL | MOD_LSFT);
+            }
+            return false;
+        case CAP_DESK:
+            if (record->event.pressed) {
+                // Cmd+Ctrl+Shift+3 for desktop capture
+                register_mods(MOD_LGUI | MOD_LCTL | MOD_LSFT);
+                register_code(KC_3);
+                unregister_code(KC_3);
+                unregister_mods(MOD_LGUI | MOD_LCTL | MOD_LSFT);
+            }
+            return false;
+        case REC_SCRN:
+            if (record->event.pressed) {
+                // Cmd+Shift+5 for screen recording
+                register_mods(MOD_LGUI | MOD_LSFT);
+                register_code(KC_5);
+                unregister_code(KC_5);
+                unregister_mods(MOD_LGUI | MOD_LSFT);
             }
             return false;
     }
