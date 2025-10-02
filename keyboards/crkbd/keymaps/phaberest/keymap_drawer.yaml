@@ -92,7 +92,7 @@ combos:
   - {p: [21, 22], k: '|', l: ["QWERTY", "COLEMAK"]}
 
   # Special functions
-  - {p: [19, 20], k: 'Word Del', l: ["NUM"]}
+  - {p: [19, 20], k: 'Delete Word', l: ["NUM"], width: 50, height: 30}
   - {p: [24, 35], k: 'Toggle Caps', l: ["QWERTY", "COLEMAK"], a: 'bottom', offset: 1.8, width: 50, height: 30}
 
 draw_config:

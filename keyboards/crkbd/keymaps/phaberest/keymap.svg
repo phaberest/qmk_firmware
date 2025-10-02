@@ -964,9 +964,9 @@ path.combo { stroke: #7f7f7f; }
 <rect rx="6" ry="6" x="-26" y="-26" width="52" height="52" class="key"/>
 </g>
 <g class="combo combopos-0">
-<rect rx="6" ry="6" x="602" y="74" width="28" height="26" class="combo"/>
+<rect rx="6" ry="6" x="591" y="72" width="50" height="30" class="combo"/>
 <text x="616" y="88" class="combo tap">
-<tspan x="616" dy="-0.6em">Word</tspan><tspan x="616" dy="1.2em">Del</tspan>
+<tspan x="616" dy="-0.6em">Delete</tspan><tspan x="616" dy="1.2em">Word</tspan>
 </text>
 </g>
 </g>
@@ -997,6 +997,9 @@ path.combo { stroke: #7f7f7f; }
 </g>
 <g transform="translate(588, 35)" class="key keypos-7">
 <rect rx="6" ry="6" x="-26" y="-26" width="52" height="52" class="key"/>
+<text x="0" y="0" class="key tap">
+<tspan x="0" dy="-0.6em">Capture</tspan><tspan x="0" dy="1.2em">Desktop</tspan>
+</text>
 </g>
 <g transform="translate(644, 28)" class="key keypos-8">
 <rect rx="6" ry="6" x="-26" y="-26" width="52" height="52" class="key"/>
@@ -1051,6 +1054,9 @@ path.combo { stroke: #7f7f7f; }
 </g>
 <g transform="translate(588, 91)" class="key keypos-19">
 <rect rx="6" ry="6" x="-26" y="-26" width="52" height="52" class="key"/>
+<text x="0" y="0" class="key tap">
+<tspan x="0" dy="-0.6em">Capture</tspan><tspan x="0" dy="1.2em">Area</tspan>
+</text>
 </g>
 <g transform="translate(644, 84)" class="key keypos-20">
 <rect rx="6" ry="6" x="-26" y="-26" width="52" height="52" class="key"/>
@@ -1087,6 +1093,9 @@ path.combo { stroke: #7f7f7f; }
 </g>
 <g transform="translate(588, 147)" class="key keypos-31">
 <rect rx="6" ry="6" x="-26" y="-26" width="52" height="52" class="key"/>
+<text x="0" y="0" class="key tap">
+<tspan x="0" dy="-0.6em">Record</tspan><tspan x="0" dy="1.2em">Screen</tspan>
+</text>
 </g>
 <g transform="translate(644, 140)" class="key keypos-32">
 <rect rx="6" ry="6" x="-26" y="-26" width="52" height="52" class="key"/>
