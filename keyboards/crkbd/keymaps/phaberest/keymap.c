@@ -51,13 +51,13 @@ enum custom_keycodes {
     EMOJI_HANDS,     // 🙌🏼
     EMOJI_LAUGH,     // 😂
     EMOJI_HEART,     // ❤️
-    SYMBOL_EURO,     // €
+    SYM_EURO,     // €
     CAPS_TOGGLE,     // Custom caps lock toggle
     // Additional symbols for numbers layer
-    SYMBOL_ARROW,    // =>
-    SYMBOL_PERCENT,  // %
-    SYMBOL_CARET,    // ^
-    SYMBOL_DOLLAR,   // $
+    SYM_ARROW,    // =>
+    SYM_PERCENT,  // %
+    SYM_CARET,    // ^
+    SYM_DOLLAR,   // $
     TOGGLE_GAMING,   // Toggle gaming layer on
     EXIT_GAMING,     // Exit gaming layer
     CHAT_MODE,       // Temporary chat mode in gaming
@@ -453,7 +453,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ═══════════════════════════════════════════════════════════════════════════
     [3] = LAYOUT_split_3x6_3(
     //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        _______, SYMBOL_PERCENT, SYMBOL_CARET, SYMBOL_EURO, SYMBOL_DOLLAR, SYMBOL_ARROW,                      KC_MINS,   KC_7,    KC_8,    KC_9,  KC_EQL, _______,
+        _______, SYM_PERCENT, SYM_CARET, SYM_EURO, SYM_DOLLAR, SYM_ARROW,          KC_MINS,   KC_7,    KC_8,    KC_9,  KC_EQL, _______,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_PLUS,   KC_4,    KC_5,    KC_6, KC_ASTR, XXXXXXX,
     //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -556,7 +556,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 // Note: combo_should_trigger will automatically handle the layout switch
             }
             return false;
-        case SYMBOL_EURO:
+        case SYM_EURO:
             if (record->event.pressed) {
                 // Use Option+Shift+2 for Euro symbol on macOS
                 register_mods(MOD_LALT | MOD_LSFT);
@@ -565,22 +565,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_mods(MOD_LALT | MOD_LSFT);
             }
             return false;
-        case SYMBOL_ARROW:
+        case SYM_ARROW:
             if (record->event.pressed) {
                 SEND_STRING("=>");  // Arrow symbol
             }
             return false;
-        case SYMBOL_PERCENT:
+        case SYM_PERCENT:
             if (record->event.pressed) {
                 SEND_STRING("%");  // Percent symbol
             }
             return false;
-        case SYMBOL_CARET:
+        case SYM_CARET:
             if (record->event.pressed) {
                 SEND_STRING("^");  // Caret symbol
             }
             return false;
-        case SYMBOL_DOLLAR:
+        case SYM_DOLLAR:
             if (record->event.pressed) {
                 SEND_STRING("$");  // Dollar symbol
             }
